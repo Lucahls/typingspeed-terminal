@@ -30,3 +30,12 @@
 *.exe
 *.out
 *.app
+
+# vcpkg
+vcpkg_installed/
+
+# cmake
+cmake-build-debug/
+
+# clion
+.idea/
