@@ -6,4 +6,4 @@ add_executable(${PROJECT_NAME} main.cpp)
 find_package(fmt CONFIG REQUIRED)
 find_package(ftxui REQUIRED)
 
-target_link_libraries(${PROJECT_NAME} fmt::fmt ftxui::screen ftxui::dom)
+target_link_libraries(${PROJECT_NAME} fmt::fmt ftxui::screen ftxui::dom ftxui::component)
