@@ -4,7 +4,7 @@
 #include <ftxui/dom/elements.hpp>
 #include <ftxui/dom/flexbox_config.hpp>
 #include <ftxui/component/component.hpp>
-// #include "src/TypeSpeed.h"
+#include "src/TypingSpeedTerminal.h"
 
 std::string type_text = "Lol was geht du Kek!";
 
@@ -47,8 +47,17 @@ std::vector<ftxui::Element> text_colored(std::string &text) {
 }
 
 int main(int argc, char** argv) {
-    //tts::TypeSpeed terminal;
-    //terminal.start();
+    tts::TypingSpeedTerminal terminal;
+    terminal.start();
+    //ftxui::ScreenInteractive screen = ftxui::ScreenInteractive::Fullscreen();
+    //ftxui::Component button = ftxui::Button("Stop Game", screen.ExitLoopClosure());
+    ////auto renderer = ftxui::Renderer(button);
+    //screen.Loop(button);
+//
+    //ftxui::Component button2 = ftxui::Button("Now actually close it", screen.ExitLoopClosure());
+    //screen.Loop(button2);
+//
+    //screen.Loop(renderer);
     /* Print text to center of terminal
      *
     ftxui::Screen screen = ftxui::Screen::Create(ftxui::Dimension::Full(), ftxui::Dimension::Full());
@@ -63,26 +72,27 @@ int main(int argc, char** argv) {
     screen.Print();
     */
 
-    ftxui::ScreenInteractive screen = ftxui::ScreenInteractive::Fullscreen();
-    std::string input_user;
-    ftxui::Component input = ftxui::Input(&input_user);
-    input |= ftxui::CatchEvent([&](ftxui::Event event) {
-        return event.is_character() && input_user.length() >= type_text.length();
-    });
-
-
-    ftxui::Component com = ftxui::Container::Horizontal({
-        input,
-    });
-
-    auto renderer = ftxui::Renderer(input, [&] {
-        return ftxui::flexbox({
-            ftxui::window(ftxui::text("Timer: 1min"),ftxui::hbox(text_colored(input_user))),
-        }, ftxui::FlexboxConfig()
-        .Set(ftxui::FlexboxConfig::AlignContent::Center)
-        .Set(ftxui::FlexboxConfig::JustifyContent::Center));
-    });
-
-    screen.Loop(renderer);
-    return 0;
+    //ftxui::ScreenInteractive screen = ftxui::ScreenInteractive::Fullscreen();
+    //std::string input_user;
+    //ftxui::Component input = ftxui::Input(&input_user);
+    //input |= ftxui::CatchEvent([&](ftxui::Event event) {
+    //    return event.is_character() && input_user.length() >= type_text.length();
+    //});
+//
+//
+    //ftxui::Component com = ftxui::Container::Horizontal({
+    //    input,
+    //});
+//
+    //auto renderer = ftxui::Renderer(input, [&] {
+    //    return ftxui::flexbox({
+    //        ftxui::window(ftxui::text("Timer: 1min"),ftxui::hbox(text_colored(input_user))),
+    //    }, ftxui::FlexboxConfig()
+    //    .Set(ftxui::FlexboxConfig::AlignContent::Center)
+    //    .Set(ftxui::FlexboxConfig::JustifyContent::Center));
+    //});
+//
+    //screen.Loop(renderer);
+    //screen.Exit();
+    //return 0;
 }
