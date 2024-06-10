@@ -6,7 +6,14 @@
 
 namespace tts {
     class TypingSpeedTerminal;
+
+    enum class TypingState {
+        CORRECT = 0,
+        WRONG,
+        EMPTY,
+    };
 }
+
 namespace tts::Frames {
 
     /**
@@ -31,13 +38,15 @@ namespace tts::Frames {
 
 
     class TypingTerminal : public Frame {
-    protected:
-        std::string _input;
-        ftxui::Component _input_field;
-        std::string _sentence = "This is the testing sentence to type";
     public:
         explicit TypingTerminal(tts::TypingSpeedTerminal* terminal);
         ftxui::Component render() override;
+    protected:
+        std::string _input;
+        ftxui::Component _input_field;
+        std::string _typing_text = "This is the testing sentence to type";
+        std::vector<tts::TypingState> _check_text(std::string const &text, std::string const &verify) const;
+        std::vector<ftxui::Element> _generate_colored_text(std::string &text) const;
     };
 
 
