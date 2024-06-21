@@ -12,15 +12,15 @@ namespace tts {
 
     class TypingSpeedTerminal {
     private:
-        tts::Frames::Frame * _frame;
+        tts::Frames::Frame*      _frame;
         ftxui::ScreenInteractive _screen = ftxui::ScreenInteractive::Fullscreen();
-        ftxui::Closure _end_loop;
-        bool _is_running = false;
+        ftxui::Closure           _end_loop;
+        bool                     _is_running = false;
     public:
         TypingSpeedTerminal();
-        void start();
+        void                  start();
         std::function<void()> exit();
-        void change_to(tts::Frames::Frame* screen);
+        void                  change_to(tts::Frames::Frame* screen);
     };
 
 }

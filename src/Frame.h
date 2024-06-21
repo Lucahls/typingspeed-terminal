@@ -12,6 +12,14 @@ namespace tts {
         WRONG,
         EMPTY,
     };
+
+    struct TypingStats {
+        int keystrokes = 0;
+        int correct_keystrokes = 0;
+        int mistakes = 0;
+        int corrected_mistakes = 0;
+        std::string last = "";
+    };
 }
 
 namespace tts::Frames {
@@ -24,7 +32,7 @@ namespace tts::Frames {
         tts::TypingSpeedTerminal* _terminal;
     public:
         explicit Frame(tts::TypingSpeedTerminal* terminal) : _terminal(terminal) {};
-        virtual ftxui::Component render() = 0;
+        virtual  ftxui::Component render() = 0;
     };
 
 
@@ -32,7 +40,7 @@ namespace tts::Frames {
     protected:
         ftxui::Component _button;
     public:
-        explicit Home(tts::TypingSpeedTerminal* terminal);
+        explicit         Home(tts::TypingSpeedTerminal* terminal);
         ftxui::Component render() override;
     };
 
@@ -41,12 +49,16 @@ namespace tts::Frames {
     public:
         explicit TypingTerminal(tts::TypingSpeedTerminal* terminal);
         ftxui::Component render() override;
+        std::shared_ptr<TypingStats> stats;
     protected:
-        std::string _input;
-        ftxui::Component _input_field;
-        std::string _typing_text = "This is the testing sentence to type";
-        std::vector<tts::TypingState> _check_text(std::string const &text, std::string const &verify) const;
-        std::vector<ftxui::Element> _generate_colored_text(std::string &text) const;
+        std::string                   _input;
+        ftxui::Component              _input_field;
+        int                           _input_index = 0;
+        std::string                   _typing_text = "Ja zapperlot, das kann man sich ja gar nicht ausdenken";
+        std::vector<tts::TypingState> _typing_states;
+        std::vector<tts::TypingState> _check_text(std::string const &text, std::string const &verify);
+        std::vector<ftxui::Element>   _generate_colored_text(std::string &text);
+        void                          _keep_statistics(const ftxui::Event& input);
     };
 
 
