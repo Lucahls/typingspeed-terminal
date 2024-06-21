@@ -1,6 +1,8 @@
 {
   "dependencies": [
+    "cpr",
     "fmt",
-    "ftxui"
+    "ftxui",
+    "nlohmann-json"
   ]
 }

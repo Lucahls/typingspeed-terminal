@@ -59,6 +59,7 @@ namespace tts::Frames {
         std::vector<tts::TypingState> _check_text(std::string const &text, std::string const &verify);
         std::vector<ftxui::Element>   _generate_colored_text(std::string &text);
         void                          _keep_statistics(const ftxui::Event& input);
+        void                          _next();
     };
 
 

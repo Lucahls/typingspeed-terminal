@@ -1,6 +1,7 @@
 #include <ftxui/component/screen_interactive.hpp>
 #include <fmt/core.h>
 #include "Frame.h"
+#include "Quotes.h"
 
 namespace tts {
     std::unordered_map<TypingState, ftxui::Color> TypingColors = {
@@ -11,6 +12,9 @@ namespace tts {
 }
 
 namespace tts::Frames {
+    /**
+     * Home
+     */
     Home::Home(TypingSpeedTerminal *terminal) : Frame(terminal) {
         this->_button = ftxui::Button("Start Game",
                                       [&] { this->_terminal->change_to(new Frames::TypingTerminal(this->_terminal)); });
@@ -22,6 +26,9 @@ namespace tts::Frames {
         });
     }
 
+    /**
+     * TypingTerminal
+     */
     TypingTerminal::TypingTerminal(TypingSpeedTerminal *terminal) : Frame(terminal) {
         this->stats = std::make_unique<TypingStats>(TypingStats());
         this->_typing_states = std::vector<tts::TypingState>(_typing_text.length(), tts::TypingState::EMPTY);
@@ -29,6 +36,10 @@ namespace tts::Frames {
         // CatchEvent is called BEFORE _input is updated,
         // therefore does not contain the currently typed key
         this->_input_field |= ftxui::CatchEvent([&](ftxui::Event event) {
+            if(event == ftxui::Event::Return) {
+                _next();
+                return true;
+            }
             // Manually keep track of the index the user currently is at in the input,
             // as there seems to be no way to get it from the input component directly
             if(event.is_character())
@@ -50,7 +61,7 @@ namespace tts::Frames {
                               ftxui::hbox(_generate_colored_text(_input))),
                               ftxui::vbox(
                                   ftxui::text(fmt::format("Keystrokes: {}; Correct: {}; Mistakes: {}", stats->keystrokes, stats->correct_keystrokes, stats->mistakes)),
-                                  ftxui::text(fmt::format("Input length: {}; Last: {}", _input.length(), stats->last))
+                                  ftxui::text(fmt::format("Input: {}; Input length: {}; Last: {}", _input, _input.length(), stats->last))
                                   )
 
                 }, ftxui::FlexboxConfig()
@@ -79,7 +90,15 @@ namespace tts::Frames {
             stats->mistakes++;
     }
 
+    void TypingTerminal::_next() {
+        _typing_text = Quotes::quote();
+        _input = "";
+        _input_index = 0;
+    }
 
+    /*
+     * Stats
+     */
     Stats::Stats(TypingSpeedTerminal *terminal) : Frame(terminal) {
         this->_button = ftxui::Button("Restart",
                                       [&] { this->_terminal->change_to(new Frames::TypingTerminal(this->_terminal)); });
