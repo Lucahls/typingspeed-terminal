@@ -16,13 +16,33 @@ namespace tts::Frames {
      * Home
      */
     Home::Home(TypingSpeedTerminal *terminal) : Frame(terminal) {
-        this->_button = ftxui::Button("Start Game",
-                                      [&] { this->_terminal->change_to(new Frames::TypingTerminal(this->_terminal)); });
+        this->_button = ftxui::Button("Press [↩] to start",
+                                      [&] { this->_terminal->change_to(new Frames::TypingTerminal(this->_terminal)); },
+                                      ftxui::ButtonOption::Simple()) | ftxui::color(ftxui::Color::LightGreen);
     }
 
     ftxui::Component Home::render() {
         return ftxui::Renderer(this->_button, [&] {
-            return this->_button->Render();
+            return ftxui::flexbox({
+                ftxui::vbox(
+                    ftxui::text("  ______            _                                      __\n"),
+                    ftxui::text(" /_  __/_  ______  (_)___  ____ __________  ___  ___  ____/ /\n"),
+                    ftxui::text("  / / / / / / __ \\/ / __ \\/ __ `/ ___/ __ \\/ _ \\/ _ \\/ __  / \n"),
+                    ftxui::text(" / / / /_/ / /_/ / / / / / /_/ (__  ) /_/ /  __/  __/ /_/ /  \n"),
+                    ftxui::text("/_/  \\__, / .___/_/_/ /_/\\__, /____/ .___/\\___/\\___/\\__,_/   \n"),
+                    ftxui::text("    /____/_/            /____/    /_/                        "),
+                    ftxui::hbox(ftxui::text("presented by "),
+                                ftxui::text("Luca") | ftxui::hyperlink("https://github.com/Lucahls")
+                    ) | ftxui::dim | ftxui::color(ftxui::Color::White)
+                ) | ftxui::color(ftxui::Color::LightGreen),
+                ftxui::flexbox({
+                    this->_button->Render(),
+                }, ftxui::FlexboxConfig()
+                .Set(ftxui::FlexboxConfig::JustifyContent::Center))
+            }, ftxui::FlexboxConfig()
+            .Set(ftxui::FlexboxConfig::Direction::Column)
+            .Set(ftxui::FlexboxConfig::JustifyContent::SpaceAround)
+            .Set(ftxui::FlexboxConfig::AlignContent::Center));
         });
     }
 
