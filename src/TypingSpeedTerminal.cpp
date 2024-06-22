@@ -2,8 +2,7 @@
 #include <fmt/core.h>
 
 tts::TypingSpeedTerminal::TypingSpeedTerminal() {
-    // this->_screen.
-    this->_frame = new tts::Frames::TypingTerminal(this);
+    this->_frame = new tts::Frames::Home(this);
 }
 
 void tts::TypingSpeedTerminal::start() {
@@ -26,5 +25,6 @@ std::function<void()> tts::TypingSpeedTerminal::exit() {
 
 void tts::TypingSpeedTerminal::change_to(tts::Frames::Frame* frame) {
     this->_frame = frame;
-    this->_screen.Exit();
+    _screen.Loop(this->_frame->render());
+    //this->_screen.Exit();
 }
