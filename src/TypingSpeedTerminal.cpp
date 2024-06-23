@@ -3,7 +3,7 @@
 #include <ftxui/component/loop.hpp>
 
 tts::TypingSpeedTerminal::TypingSpeedTerminal() {
-    this->_frame = new tts::Frames::TypingTerminal(this);
+    this->_frame = new tts::Frames::Home(this);
 }
 
 void tts::TypingSpeedTerminal::start() {

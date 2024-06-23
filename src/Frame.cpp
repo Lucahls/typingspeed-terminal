@@ -10,6 +10,83 @@ namespace tts {
             {TypingState::WRONG, ftxui::Color::Red},
             {TypingState::EMPTY, ftxui::Color::GrayDark},
     };
+
+    ftxui::Element int_to_ascii_art(int number){
+        switch (number) {
+            case 1:
+                return ftxui::vbox({
+                    ftxui::text("  _ \n"),
+                    ftxui::text(" / |\n"),
+                    ftxui::text(" | |\n"),
+                    ftxui::text(" |_|\n"),
+                    });
+            case 2:
+                return ftxui::vbox({
+                    ftxui::text(" ___ \n"),
+                    ftxui::text("|_  )\n"),
+                    ftxui::text(" / / \n"),
+                    ftxui::text("/___|\n"),
+                    });
+            case 3:
+                return ftxui::vbox({
+                    ftxui::text(" ____\n"),
+                    ftxui::text("|__ /\n"),
+                    ftxui::text(" |_ \\\n"),
+                    ftxui::text("|___/\n"),
+                    });
+            case 4:
+                return ftxui::vbox({
+                    ftxui::text(" _ _  \n"),
+                    ftxui::text("| | | \n"),
+                    ftxui::text("|_  _|\n"),
+                    ftxui::text("  |_| \n"),
+                    });
+            case 5:
+                return ftxui::vbox({
+                    ftxui::text(" ___ \n"),
+                    ftxui::text("| __|\n"),
+                    ftxui::text("|__ \\\n"),
+                    ftxui::text("|___/\n"),
+                    });
+            case 6:
+                return ftxui::vbox({
+                    ftxui::text("  __ \n"),
+                    ftxui::text(" / / \n"),
+                    ftxui::text("/ _ \\\n"),
+                    ftxui::text("\\___/\n"),
+                    });
+            case 7:
+                return ftxui::vbox({
+                    ftxui::text(" ____ \n"),
+                    ftxui::text("|__  |\n"),
+                    ftxui::text("  / / \n"),
+                    ftxui::text(" /_/  \n"),
+                    });
+            case 8:
+                return ftxui::vbox({
+                    ftxui::text(" ___ \n"),
+                    ftxui::text("( _ )\n"),
+                    ftxui::text("/ _ \\\n"),
+                    ftxui::text("\\___/\n"),
+                    });
+            case 9:
+                return ftxui::vbox({
+                    ftxui::text(" ___ \n"),
+                    ftxui::text("/ _ \\\n"),
+                    ftxui::text("\\_, /\n"),
+                    ftxui::text(" /_/ \n"),
+                    });
+            case 0:
+                return ftxui::vbox({
+                    ftxui::text("  __\n"),
+                    ftxui::text(" /  \\ \n"),
+                    ftxui::text("| () |\n"),
+                    ftxui::text(" \\__/ \n"),
+                    });
+            default:
+                return ftxui::text("");
+        }
+    }
 }
 
 namespace tts::Frames {
@@ -81,9 +158,12 @@ namespace tts::Frames {
 
     ftxui::Component TypingTerminal::render() {
         return ftxui::Renderer(this->_input_field, [&] {
+            int remain = _timer.remaining();
+            std::string remain_str = std::to_string(remain);
             return ftxui::flexbox({
-                ftxui::hbox(ftxui::text(fmt::format("{}s",_timer.remaining())),
-                            ftxui::gauge(_timer.remaining()/60.0f)),
+                ftxui::hbox({int_to_ascii_art(remain_str[0] - '0'), int_to_ascii_art(remain_str[1] - '0')}),
+                //ftxui::hbox({ftxui::text(fmt::format("{}s",_timer.remaining())) | ftxui::size(ftxui::WIDTH, ftxui::EQUAL, 5),
+                //            ftxui::gauge(_timer.remaining()/60.f)  | ftxui::xflex}),
                 ftxui::hbox(_generate_colored_text(_input)),
                 //ftxui::vbox(
                 //    ftxui::text(fmt::format("Keystrokes: {}; Correct: {}; Mistakes: {}", stats->keystrokes, stats->correct_keystrokes, stats->mistakes)),

@@ -6,6 +6,7 @@
 #include "Timer.h"
 
 namespace tts {
+    ftxui::Element int_to_ascii_art(int number);
     class TypingSpeedTerminal;
 
     enum class TypingState {
