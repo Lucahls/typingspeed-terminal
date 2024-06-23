@@ -6,7 +6,8 @@ project(TypingSpeedTerminal)
 add_executable(${PROJECT_NAME} main.cpp
         src/TypingSpeedTerminal.cpp
         src/Frame.cpp
-        src/Quotes.cpp)
+        src/Quotes.cpp
+        src/Timer.cpp)
 
 find_package(fmt CONFIG REQUIRED)
 find_package(ftxui REQUIRED)

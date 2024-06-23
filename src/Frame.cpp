@@ -2,6 +2,7 @@
 #include <fmt/core.h>
 #include "Frame.h"
 #include "Quotes.h"
+#include <chrono>
 
 namespace tts {
     std::unordered_map<TypingState, ftxui::Color> TypingColors = {
@@ -53,6 +54,7 @@ namespace tts::Frames {
         this->stats = std::make_unique<TypingStats>(TypingStats());
         this->_typing_states = std::vector<tts::TypingState>(_typing_text.length(), tts::TypingState::EMPTY);
         this->_input_field = ftxui::Input(&this->_input);
+        _timer.start();
         // CatchEvent is called BEFORE _input is updated,
         // therefore does not contain the currently typed key
         this->_input_field |= ftxui::CatchEvent([&](ftxui::Event event) {
@@ -60,29 +62,33 @@ namespace tts::Frames {
                 _next();
                 return true;
             }
-            // Manually keep track of the index the user currently is at in the input,
+            // Manually keep track of the cursor position in the input,
             // as there seems to be no way to get it from the input component directly
-            if(event.is_character())
+            if(event.is_character() and _input.length() < _typing_text.length()) {
                 _input_index += _input_index <= _input.length() ? 1 : 0;
+                _keep_statistics(event);
+            }
             else if(event == ftxui::Event::ArrowRight)
                 _input_index += _input_index < _input.length() ? 1 : 0;
             else if(event == ftxui::Event::Backspace or event == ftxui::Event::ArrowLeft)
                 _input_index -= _input_index > 0 ? 1 : 0;
+            else
+                return true;
 
-            _keep_statistics(event);
-            return event.is_character() && this->_input.length() >= this->_typing_text.length();
+            return false;
         });
     }
 
     ftxui::Component TypingTerminal::render() {
         return ftxui::Renderer(this->_input_field, [&] {
             return ftxui::flexbox({
-                ftxui::window(ftxui::text("Timer: 1min"),
-                              ftxui::hbox(_generate_colored_text(_input))),
-                              ftxui::vbox(
-                                  ftxui::text(fmt::format("Keystrokes: {}; Correct: {}; Mistakes: {}", stats->keystrokes, stats->correct_keystrokes, stats->mistakes)),
-                                  ftxui::text(fmt::format("Input: {}; Input length: {}; Last: {}", _input, _input.length(), stats->last))
-                                  )
+                ftxui::hbox(ftxui::text(fmt::format("{}s",_timer.remaining())),
+                            ftxui::gauge(_timer.remaining()/60.0f)),
+                ftxui::hbox(_generate_colored_text(_input)),
+                //ftxui::vbox(
+                //    ftxui::text(fmt::format("Keystrokes: {}; Correct: {}; Mistakes: {}", stats->keystrokes, stats->correct_keystrokes, stats->mistakes)),
+                //    ftxui::text(fmt::format("Input: {}; Input length: {}; Index: {}", _input, _input.length(), _input_index))
+                //    )
 
                 }, ftxui::FlexboxConfig()
                 .Set(ftxui::FlexboxConfig::AlignContent::Center)
