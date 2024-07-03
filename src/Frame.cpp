@@ -3,36 +3,37 @@
 #include "Frame.h"
 #include "Quotes.h"
 #include <chrono>
+#include <utility>
 
 namespace tts {
     std::unordered_map<TypingState, ftxui::Color> TypingColors = {
-            {TypingState::CORRECT, ftxui::Color::GrayLight},
+            {TypingState::CORRECT, ftxui::Color::LightGreen},
             {TypingState::WRONG, ftxui::Color::Red},
-            {TypingState::EMPTY, ftxui::Color::GrayDark},
+            {TypingState::EMPTY, ftxui::Color::GrayLight},
     };
 
     ftxui::Element int_to_ascii_art(int number){
         switch (number) {
             case 1:
                 return ftxui::vbox({
-                    ftxui::text("  _ \n"),
-                    ftxui::text(" / |\n"),
-                    ftxui::text(" | |\n"),
-                    ftxui::text(" |_|\n"),
+                    ftxui::text("  _   \n"),
+                    ftxui::text(" / |  \n"),
+                    ftxui::text(" | |  \n"),
+                    ftxui::text(" |_|  \n"),
                     });
             case 2:
                 return ftxui::vbox({
-                    ftxui::text(" ___ \n"),
-                    ftxui::text("|_  )\n"),
-                    ftxui::text(" / / \n"),
-                    ftxui::text("/___|\n"),
+                    ftxui::text(" ___  \n"),
+                    ftxui::text("|_  ) \n"),
+                    ftxui::text(" / /  \n"),
+                    ftxui::text("/___| \n"),
                     });
             case 3:
                 return ftxui::vbox({
-                    ftxui::text(" ____\n"),
-                    ftxui::text("|__ /\n"),
-                    ftxui::text(" |_ \\\n"),
-                    ftxui::text("|___/\n"),
+                    ftxui::text(" ____ \n"),
+                    ftxui::text("|__ / \n"),
+                    ftxui::text(" |_ \\ \n"),
+                    ftxui::text("|___/ \n"),
                     });
             case 4:
                 return ftxui::vbox({
@@ -43,10 +44,10 @@ namespace tts {
                     });
             case 5:
                 return ftxui::vbox({
-                    ftxui::text(" ___ \n"),
-                    ftxui::text("| __|\n"),
-                    ftxui::text("|__ \\\n"),
-                    ftxui::text("|___/\n"),
+                    ftxui::text(" ___  \n"),
+                    ftxui::text("| __| \n"),
+                    ftxui::text("|__ \\ \n"),
+                    ftxui::text("|___/ \n"),
                     });
             case 6:
                 return ftxui::vbox({
@@ -64,10 +65,10 @@ namespace tts {
                     });
             case 8:
                 return ftxui::vbox({
-                    ftxui::text(" ___ \n"),
-                    ftxui::text("( _ )\n"),
-                    ftxui::text("/ _ \\\n"),
-                    ftxui::text("\\___/\n"),
+                    ftxui::text(" ___  \n"),
+                    ftxui::text("( _ ) \n"),
+                    ftxui::text("/ _ \\ \n"),
+                    ftxui::text("\\___/ \n"),
                     });
             case 9:
                 return ftxui::vbox({
@@ -127,10 +128,11 @@ namespace tts::Frames {
     /**
      * TypingTerminal
      */
-    TypingTerminal::TypingTerminal(TypingSpeedTerminal *terminal) : Frame(terminal) {
-        this->stats = std::make_unique<TypingStats>(TypingStats());
+    TypingTerminal::TypingTerminal(TypingSpeedTerminal *terminal)
+        : Frame(terminal), _timer(10) {
         this->_typing_states = std::vector<tts::TypingState>(_typing_text.length(), tts::TypingState::EMPTY);
         this->_input_field = ftxui::Input(&this->_input);
+        this->_typing_text = Quotes::quote();
         _timer.start();
         // CatchEvent is called BEFORE _input is updated,
         // therefore does not contain the currently typed key
@@ -158,17 +160,28 @@ namespace tts::Frames {
 
     ftxui::Component TypingTerminal::render() {
         return ftxui::Renderer(this->_input_field, [&] {
+            if(_timer.finished())
+                change_to_stats();
+
             int remain = _timer.remaining();
             std::string remain_str = std::to_string(remain);
             return ftxui::flexbox({
-                ftxui::hbox({int_to_ascii_art(remain_str[0] - '0'), int_to_ascii_art(remain_str[1] - '0')}),
+                ftxui::flexbox({
+                    ftxui::hbox({int_to_ascii_art(remain_str[0] - '0'),
+                                 int_to_ascii_art(remain_str[1] - '0')})
+                            | ftxui::color((remain < 15 ? ftxui::Color::Orange1 : ftxui::Color::LightGreen))
+                }, ftxui::FlexboxConfig()
+                .Set(ftxui::FlexboxConfig::JustifyContent::Center)),
                 //ftxui::hbox({ftxui::text(fmt::format("{}s",_timer.remaining())) | ftxui::size(ftxui::WIDTH, ftxui::EQUAL, 5),
                 //            ftxui::gauge(_timer.remaining()/60.f)  | ftxui::xflex}),
                 ftxui::hbox(_generate_colored_text(_input)),
-                //ftxui::vbox(
-                //    ftxui::text(fmt::format("Keystrokes: {}; Correct: {}; Mistakes: {}", stats->keystrokes, stats->correct_keystrokes, stats->mistakes)),
-                //    ftxui::text(fmt::format("Input: {}; Input length: {}; Index: {}", _input, _input.length(), _input_index))
-                //    )
+                ftxui::vbox(
+                    ftxui::text(fmt::format("Keystrokes: {}; Correct: {}; Wrong: {}",
+                                            stats.correct_keystrokes + stats.wrong_keystrokes,
+                                            stats.correct_keystrokes, stats.wrong_keystrokes)),
+                    ftxui::text(fmt::format("Input: {}; Input length: {}; Index: {}",
+                                            _input, _input.length(), _input_index))
+                    )
 
                 }, ftxui::FlexboxConfig()
                 .Set(ftxui::FlexboxConfig::AlignContent::Center)
@@ -177,23 +190,29 @@ namespace tts::Frames {
         });
     }
 
+    void TypingTerminal::change_to_stats() {
+        this->_terminal->exit()();
+        //this->_terminal->change_to(new Stats(this->_terminal, stats));
+    }
+
     void TypingTerminal::_keep_statistics(const ftxui::Event& input) {
-        // TODO: Somehow count corrected mistakes, maybe using a 'last-state' value/array for each character, when the last state was wrong, but now it is correct => corrected_mistakes++
+        // TODO: Somehow count corrected mistakes, maybe using a 'last-state'
+        //  value/array for each character, when the last state was wrong,
+        //  but now it is correct => corrected_mistakes++
 
         // Undo a typing mistake
         if(ftxui::Event::Backspace == input && _typing_states[_input_index] == TypingState::WRONG)
-            stats->mistakes--;
+            stats.mistakes--;
 
         // Only count non-function keys (backspace, shift, ...)
         if(!input.is_character())
             return;
-        stats->keystrokes++;
 
-        stats->last = std::string(1, _typing_text[_input_index-1]);
-        if(stats->last == input.character())
-            stats->correct_keystrokes++;
+        stats.last = std::string(1, _typing_text[_input_index-1]);
+        if(stats.last == input.character())
+            stats.correct_keystrokes++;
         else
-            stats->mistakes++;
+            stats.wrong_keystrokes++;
     }
 
     void TypingTerminal::_next() {
@@ -201,22 +220,6 @@ namespace tts::Frames {
         _input = "";
         _input_index = 0;
     }
-
-    /*
-     * Stats
-     */
-    Stats::Stats(TypingSpeedTerminal *terminal) : Frame(terminal) {
-        this->_button = ftxui::Button("Restart",
-                                      [&] { this->_terminal->change_to(new Frames::TypingTerminal(this->_terminal)); });
-
-    }
-
-    ftxui::Component Stats::render() {
-        return ftxui::Renderer(this->_button, [&] {
-            return this->_button->Render();
-        });
-    }
-
 
     std::vector<tts::TypingState> TypingTerminal::_check_text(const std::string &text,
                                                               const std::string &verify) {
@@ -239,14 +242,46 @@ namespace tts::Frames {
         for (int i = 0; i < _typing_states.size(); i++) {
             // Color each character responding to its correctness
             ftxui::Element el = ftxui::text(std::string{this->_typing_text[i]});
-            el |= ftxui::color(tts::TypingColors[_typing_states[i]]);
+            if(i != _input_index)
+                el |= ftxui::color(tts::TypingColors[_typing_states[i]]);
+            else {
+                el |= ftxui::color(ftxui::Color::Black);
+                el |= ftxui::bgcolor(ftxui::Color::White);
+            }
             if (_typing_states[i] == tts::TypingState::WRONG)
                 el |= ftxui::underlined;
 
-            if (i == _input_index)
-                el |= ftxui::bgcolor(ftxui::Color::White);
             elements[i] = el;
         }
         return elements;
+    }
+
+
+    /*
+     * Stats
+     */
+    Stats::Stats(TypingSpeedTerminal *terminal, TypingStats stats)
+        : Frame(terminal), _stats(std::move(stats)) {
+        this->_button = ftxui::Button("Restart",
+                                      [&] { this->_terminal->change_to(new Frames::TypingTerminal(this->_terminal)); });
+
+    }
+
+    ftxui::Component Stats::render() {
+        return ftxui::Renderer(this->_button, [&] {
+            return ftxui::flexbox({
+                this->_button->Render(),
+                ftxui::vbox({
+                    ftxui::text("Keystrokes") | ftxui::underlined,
+                    ftxui::text(fmt::format("Keystrokes: {}",_stats.correct_keystrokes)),
+                    ftxui::text(fmt::format("Correct: {}",_stats.correct_keystrokes)),
+                    ftxui::text(fmt::format("Wrong: {}",_stats.wrong_keystrokes)),
+                    ftxui::text("Characters") | ftxui::underlined,
+                    ftxui::text(fmt::format("Characters: {}",_stats.correct + _stats.mistakes)),
+                    ftxui::text(fmt::format("Correct: {}",_stats.correct)),
+                    ftxui::text(fmt::format("Wrong: {}",_stats.mistakes)),
+                }),
+            });
+        });
     }
 }

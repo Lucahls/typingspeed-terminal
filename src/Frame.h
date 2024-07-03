@@ -17,7 +17,6 @@ namespace tts {
 
     struct TypingStats {
         // Single Keystroke
-        int keystrokes = 0;
         int correct_keystrokes = 0;
         int wrong_keystrokes = 0;
         // Characters in sentence
@@ -50,19 +49,21 @@ namespace tts::Frames {
         ftxui::Component render() override;
     };
 
+    class Stats;
 
     class TypingTerminal : public Frame {
     public:
         explicit TypingTerminal(tts::TypingSpeedTerminal* terminal);
         ftxui::Component render() override;
-        std::shared_ptr<TypingStats> stats;
+        TypingStats stats = TypingStats();
+        void change_to_stats();
     protected:
         int                           _seconds = 600;
-        Timer                         _timer = Timer(60);
+        Timer                         _timer;
         std::string                   _input;
         ftxui::Component              _input_field;
         int                           _input_index = 0;
-        std::string                   _typing_text = "Was geht ab";
+        std::string                   _typing_text;
         std::vector<tts::TypingState> _typing_states;
         std::vector<tts::TypingState> _check_text(std::string const &text, std::string const &verify);
         std::vector<ftxui::Element>   _generate_colored_text(std::string &text);
@@ -74,8 +75,9 @@ namespace tts::Frames {
     class Stats : public Frame {
     protected:
         ftxui::Component _button;
+        TypingStats _stats;
     public:
-        explicit Stats(tts::TypingSpeedTerminal* terminal);
+        explicit Stats(tts::TypingSpeedTerminal* terminal, TypingStats stats);
         ftxui::Component render() override;
     };
 }
