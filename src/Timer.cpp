@@ -8,15 +8,15 @@
 
 namespace tts {
     void Timer::start() {
-        std::thread thread([](int* s){
-            while(*s > 0) {
-                std::this_thread::sleep_for(std::chrono::seconds(1));
-                *s -= 1;
-            }
-            }, &(this->_seconds));
-        thread.detach();
+        auto start_time = std::chrono::system_clock::now();
+        target_time = start_time + std::chrono::duration(std::chrono::seconds(_seconds));
     }
-    int Timer::remaining() {
-        return _seconds;
+
+    int Timer::remaining() const {
+        return std::chrono::duration_cast<std::chrono::seconds>(target_time - std::chrono::system_clock::now()).count();
+    }
+
+    bool Timer::finished() {
+        return std::chrono::system_clock::now() > target_time;
     }
 } // tts
