@@ -9,7 +9,7 @@
 namespace tts {
     std::string Quotes::_fetch_quote() {
         cpr::Response r = cpr::Get(
-                cpr::Url{"https://api.quotable.io/random"});
+                cpr::Url{"https://api.quotable.io/random?maxLength=70"});
         return nlohmann::json::parse(r.text)["content"];
     }
 
