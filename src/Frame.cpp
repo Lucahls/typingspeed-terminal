@@ -2,7 +2,6 @@
 #include <fmt/core.h>
 #include "Frame.h"
 #include "Quotes.h"
-#include <chrono>
 #include <utility>
 
 namespace tts {
@@ -191,8 +190,7 @@ namespace tts::Frames {
     }
 
     void TypingTerminal::change_to_stats() {
-        this->_terminal->exit()();
-        //this->_terminal->change_to(new Stats(this->_terminal, stats));
+        this->_terminal->change_to(new Stats(this->_terminal, stats));
     }
 
     void TypingTerminal::_keep_statistics(const ftxui::Event& input) {

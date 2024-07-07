@@ -13,6 +13,7 @@ namespace tts {
     class TypingSpeedTerminal {
     private:
         tts::Frames::Frame*      _frame;
+        tts::Frames::Frame*      _next_frame;
         ftxui::ScreenInteractive _screen = ftxui::ScreenInteractive::Fullscreen();
         ftxui::Closure           _end_loop;
         bool                     _is_running = false;
