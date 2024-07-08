@@ -56,7 +56,7 @@ namespace tts::Frames {
         ftxui::Component render() override;
         TypingStats stats = TypingStats();
     protected:
-        int                           _seconds = 600;
+        int                           _seconds = 10;
         Timer                         _timer;
         std::string                   _input;
         ftxui::Component              _input_field;
@@ -65,7 +65,8 @@ namespace tts::Frames {
         std::vector<tts::TypingState> _typing_states;
         std::vector<tts::TypingState> _check_text(std::string const &text, std::string const &verify);
         std::vector<ftxui::Element>   _generate_colored_text(std::string &text);
-        void                          _keep_statistics(const ftxui::Event& input);
+        void                          _keep_statistics_keys(const ftxui::Event& input);
+        void                          _keep_statistics_chars();
         void                          _next();
     };
 
@@ -74,9 +75,10 @@ namespace tts::Frames {
     protected:
         ftxui::Component _button_restart;
         ftxui::Component _button_quit;
-        TypingStats _stats;
+        TypingStats      _stats;
+        int              _wpm;
     public:
-        explicit Stats(tts::TypingSpeedTerminal* terminal, TypingStats stats);
+        explicit Stats(tts::TypingSpeedTerminal* terminal, TypingStats& stats, int seconds);
         ftxui::Component render() override;
     };
 }

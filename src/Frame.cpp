@@ -42,7 +42,7 @@ namespace tts::Frames {
      * TypingTerminal
      */
     TypingTerminal::TypingTerminal(TypingSpeedTerminal *terminal)
-        : Frame(terminal), _timer(60) {
+        : Frame(terminal), _timer(_seconds) {
         this->_typing_states = std::vector<tts::TypingState>(_typing_text.length(), tts::TypingState::EMPTY);
         this->_input_field = ftxui::Input(&this->_input);
         this->_typing_text = Quotes::quote();
@@ -51,6 +51,7 @@ namespace tts::Frames {
         // therefore does not contain the currently typed key
         this->_input_field |= ftxui::CatchEvent([&](ftxui::Event event) {
             if(event == ftxui::Event::Return) {
+                _keep_statistics_chars();
                 _next();
                 return true;
             }
@@ -58,7 +59,7 @@ namespace tts::Frames {
             // as there seems to be no way to get it from the input component directly
             if(event.is_character() and _input.length() < _typing_text.length()) {
                 _input_index += _input_index <= _input.length() ? 1 : 0;
-                _keep_statistics(event);
+                _keep_statistics_keys(event);
             }
             else if(event == ftxui::Event::ArrowRight)
                 _input_index += _input_index < _input.length() ? 1 : 0;
@@ -73,12 +74,16 @@ namespace tts::Frames {
 
     ftxui::Component TypingTerminal::render() {
         return ftxui::Renderer(this->_input_field, [&] {
-            if(_timer.finished())
-                this->_terminal->change_to(new Stats(this->_terminal, stats));
+            if(_timer.finished()) {
+                _keep_statistics_chars();
+                this->_terminal->change_to(new Stats(this->_terminal, stats, _seconds));
+            }
 
             int remain = _timer.remaining();
             return ftxui::flexbox({
-                to_ascii_art(remain) | ftxui::color((remain < 15 ? ftxui::Color::Orange1 : ftxui::Color::LightGreen)),
+                to_ascii_art(remain) | (remain < 15 ? ftxui::color(ftxui::Color::Orange1) : ftxui::color(ftxui::Color::White)),
+                ftxui::text("seconds remaining"),
+                ftxui::text(""),
                 ftxui::hbox(_generate_colored_text(_input)),
                 //ftxui::vbox(
                 //    ftxui::text(fmt::format("Keystrokes: {}; Correct: {}; Wrong: {}",
@@ -96,7 +101,7 @@ namespace tts::Frames {
         });
     }
 
-    void TypingTerminal::_keep_statistics(const ftxui::Event& input) {
+    void TypingTerminal::_keep_statistics_keys(const ftxui::Event& input) {
         // TODO: Somehow count corrected mistakes, maybe using a 'last-state'
         //  value/array for each character, when the last state was wrong,
         //  but now it is correct => corrected_mistakes++
@@ -114,6 +119,21 @@ namespace tts::Frames {
             stats.correct_keystrokes++;
         else
             stats.wrong_keystrokes++;
+    }
+
+    void TypingTerminal::_keep_statistics_chars() {
+        for(TypingState state : _typing_states){
+            switch (state) {
+                case TypingState::CORRECT:
+                    stats.correct++;
+                    break;
+                case TypingState::WRONG:
+                    stats.mistakes++;
+                    break;
+                default:
+                    break;
+            }
+        }
     }
 
     void TypingTerminal::_next() {
@@ -161,21 +181,21 @@ namespace tts::Frames {
     /*
      * Stats
      */
-    Stats::Stats(TypingSpeedTerminal *terminal, TypingStats stats)
-        : Frame(terminal), _stats(std::move(stats)) {
+    Stats::Stats(TypingSpeedTerminal *terminal, TypingStats& stats, int seconds)
+        : Frame(terminal), _stats(stats) {
         this->_button_restart = ftxui::Button("Restart",
                                       [&] { this->_terminal->change_to(new Frames::TypingTerminal(this->_terminal)); });
         this->_button_quit = ftxui::Button("Quit", this->_terminal->exit());
+        // Calculation for Net WPM from https://www.speedtypingonline.com/typing-equations
+        _wpm = ((_stats.correct / 5.f) - _stats.mistakes) / (seconds / 60.f);
     }
 
     ftxui::Component Stats::render() {
-        // Calculation for Net WPM from https://www.speedtypingonline.com/typing-equations
-        int wpm = (_stats.correct / 5) - _stats.mistakes;
         return ftxui::Renderer(ftxui::Container::Horizontal({this->_button_quit,
                                                              this->_button_restart}) , [&] {
             return ftxui::flexbox({
                 // Header
-               to_ascii_art(wpm) | ftxui::bold | ftxui::color(ftxui::Color::LightGreen),
+               to_ascii_art(_wpm) | ftxui::bold | ftxui::color(ftxui::Color::LightGreen),
                ftxui::text("Words per minute"),
                ftxui::text(""),
 
