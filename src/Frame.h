@@ -74,7 +74,8 @@ namespace tts::Frames {
 
     class Stats : public Frame {
     protected:
-        ftxui::Component _button;
+        ftxui::Component _button_restart;
+        ftxui::Component _button_quit;
         TypingStats _stats;
     public:
         explicit Stats(tts::TypingSpeedTerminal* terminal, TypingStats stats);

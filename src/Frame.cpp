@@ -11,8 +11,8 @@ namespace tts {
             {TypingState::EMPTY, ftxui::Color::GrayLight},
     };
 
-    ftxui::Element int_to_ascii_art(int number){
-        switch (number) {
+    ftxui::Element digit_to_ascii_art(int digit){
+        switch (digit) {
             case 1:
                 return ftxui::vbox({
                     ftxui::text("  _   \n"),
@@ -87,6 +87,15 @@ namespace tts {
                 return ftxui::text("");
         }
     }
+
+    ftxui::Element to_ascii_art(int number){
+        std::string str_num = std::to_string(number);
+        std::vector<ftxui::Element> all_digits;
+        for(auto digit : str_num){
+            all_digits.push_back(digit_to_ascii_art(digit - '0'));
+        }
+        return ftxui::hbox(all_digits);
+    }
 }
 
 namespace tts::Frames {
@@ -128,7 +137,7 @@ namespace tts::Frames {
      * TypingTerminal
      */
     TypingTerminal::TypingTerminal(TypingSpeedTerminal *terminal)
-        : Frame(terminal), _timer(10) {
+        : Frame(terminal), _timer(60) {
         this->_typing_states = std::vector<tts::TypingState>(_typing_text.length(), tts::TypingState::EMPTY);
         this->_input_field = ftxui::Input(&this->_input);
         this->_typing_text = Quotes::quote();
@@ -163,28 +172,21 @@ namespace tts::Frames {
                 change_to_stats();
 
             int remain = _timer.remaining();
-            std::string remain_str = std::to_string(remain);
             return ftxui::flexbox({
-                ftxui::flexbox({
-                    ftxui::hbox({int_to_ascii_art(remain_str[0] - '0'),
-                                 int_to_ascii_art(remain_str[1] - '0')})
-                            | ftxui::color((remain < 15 ? ftxui::Color::Orange1 : ftxui::Color::LightGreen))
-                }, ftxui::FlexboxConfig()
-                .Set(ftxui::FlexboxConfig::JustifyContent::Center)),
-                //ftxui::hbox({ftxui::text(fmt::format("{}s",_timer.remaining())) | ftxui::size(ftxui::WIDTH, ftxui::EQUAL, 5),
-                //            ftxui::gauge(_timer.remaining()/60.f)  | ftxui::xflex}),
+                to_ascii_art(remain) | ftxui::color((remain < 15 ? ftxui::Color::Orange1 : ftxui::Color::LightGreen)),
                 ftxui::hbox(_generate_colored_text(_input)),
-                ftxui::vbox(
-                    ftxui::text(fmt::format("Keystrokes: {}; Correct: {}; Wrong: {}",
-                                            stats.correct_keystrokes + stats.wrong_keystrokes,
-                                            stats.correct_keystrokes, stats.wrong_keystrokes)),
-                    ftxui::text(fmt::format("Input: {}; Input length: {}; Index: {}",
-                                            _input, _input.length(), _input_index))
-                    )
+                //ftxui::vbox(
+                //    ftxui::text(fmt::format("Keystrokes: {}; Correct: {}; Wrong: {}",
+                //                            stats.correct_keystrokes + stats.wrong_keystrokes,
+                //                            stats.correct_keystrokes, stats.wrong_keystrokes)),
+                //    ftxui::text(fmt::format("Input: {}; Input length: {}; Index: {}",
+                //                            _input, _input.length(), _input_index))
+                //    )
 
                 }, ftxui::FlexboxConfig()
                 .Set(ftxui::FlexboxConfig::AlignContent::Center)
                 .Set(ftxui::FlexboxConfig::JustifyContent::Center)
+                .Set(ftxui::FlexboxConfig::AlignItems::Center)
                 .Set(ftxui::FlexboxConfig::Direction::Column));
         });
     }
@@ -202,7 +204,7 @@ namespace tts::Frames {
         if(ftxui::Event::Backspace == input && _typing_states[_input_index] == TypingState::WRONG)
             stats.mistakes--;
 
-        // Only count non-function keys (backspace, shift, ...)
+        // Only count non-function keys (ignore backspace, shift, ...)
         if(!input.is_character())
             return;
 
@@ -260,26 +262,75 @@ namespace tts::Frames {
      */
     Stats::Stats(TypingSpeedTerminal *terminal, TypingStats stats)
         : Frame(terminal), _stats(std::move(stats)) {
-        this->_button = ftxui::Button("Restart",
+        this->_button_restart = ftxui::Button("Restart",
                                       [&] { this->_terminal->change_to(new Frames::TypingTerminal(this->_terminal)); });
-
+        this->_button_quit = ftxui::Button("Quit", this->_terminal->exit());
     }
 
     ftxui::Component Stats::render() {
-        return ftxui::Renderer(this->_button, [&] {
+        // Calculation for Net WPM from https://www.speedtypingonline.com/typing-equations
+        int wpm = (_stats.correct / 5) - _stats.mistakes;
+        return ftxui::Renderer(ftxui::Container::Horizontal({this->_button_quit,
+                                                             this->_button_restart}) , [&] {
             return ftxui::flexbox({
-                this->_button->Render(),
-                ftxui::vbox({
-                    ftxui::text("Keystrokes") | ftxui::underlined,
-                    ftxui::text(fmt::format("Keystrokes: {}",_stats.correct_keystrokes)),
-                    ftxui::text(fmt::format("Correct: {}",_stats.correct_keystrokes)),
-                    ftxui::text(fmt::format("Wrong: {}",_stats.wrong_keystrokes)),
-                    ftxui::text("Characters") | ftxui::underlined,
-                    ftxui::text(fmt::format("Characters: {}",_stats.correct + _stats.mistakes)),
-                    ftxui::text(fmt::format("Correct: {}",_stats.correct)),
-                    ftxui::text(fmt::format("Wrong: {}",_stats.mistakes)),
-                }),
-            });
+                // Header
+               to_ascii_art(wpm) | ftxui::bold | ftxui::color(ftxui::Color::LightGreen),
+               ftxui::text("Words per minute"),
+               ftxui::text(""),
+
+               // Detailed stats
+                ftxui::flexbox({
+                    ftxui::vbox(
+                        ftxui::text("Keystrokes") | ftxui::bold,
+                        ftxui::flexbox({
+                            ftxui::vbox(
+                                ftxui::text("Total"),
+                                ftxui::text("Correct"),
+                                ftxui::text("Wrong")
+                            ) | ftxui::dim,
+                            ftxui::vbox(
+                                ftxui::text(std::to_string(_stats.correct_keystrokes + _stats.wrong_keystrokes)),
+                                ftxui::text(std::to_string(_stats.correct_keystrokes)),
+                                ftxui::text(std::to_string(_stats.wrong_keystrokes))
+                            )
+                        }, ftxui::FlexboxConfig()
+                        .Set(ftxui::FlexboxConfig::Direction::Row)
+                        .Set(ftxui::FlexboxConfig::JustifyContent::SpaceBetween))
+                    ),
+                    ftxui::vbox(
+                        ftxui::text("Characters") | ftxui::bold,
+                        ftxui::flexbox({
+                            ftxui::vbox(
+                                ftxui::text("Total"),
+                                ftxui::text("Correct"),
+                                ftxui::text("Wrong")
+                            ) | ftxui::dim,
+                            ftxui::vbox(
+                                ftxui::text(std::to_string(_stats.correct + _stats.mistakes)),
+                                ftxui::text(std::to_string(_stats.correct)),
+                                ftxui::text(std::to_string(_stats.mistakes))
+                            )
+                        }, ftxui::FlexboxConfig()
+                        .Set(ftxui::FlexboxConfig::Direction::Row)
+                        .Set(ftxui::FlexboxConfig::JustifyContent::Stretch))
+                    ),
+                }, ftxui::FlexboxConfig()
+                .Set(ftxui::FlexboxConfig::Direction::Row)
+                .Set(ftxui::FlexboxConfig::JustifyContent::SpaceAround))
+                | ftxui::size(ftxui::WIDTH, ftxui::GREATER_THAN, 50),
+                ftxui::text(""),
+
+                // Buttons
+                ftxui::hbox({
+                        this->_button_quit->Render(),
+                        ftxui::text("     "),
+                        this->_button_restart->Render(),
+                })
+            }, ftxui::FlexboxConfig()
+            .Set(ftxui::FlexboxConfig::Direction::Column)
+            .Set(ftxui::FlexboxConfig::JustifyContent::Center)
+            .Set(ftxui::FlexboxConfig::AlignContent::Center)
+            .Set(ftxui::FlexboxConfig::AlignItems::Center));
         });
     }
 }
