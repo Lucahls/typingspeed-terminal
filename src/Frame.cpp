@@ -1,7 +1,8 @@
-#include <ftxui/component/screen_interactive.hpp>
-#include <fmt/core.h>
 #include "Frame.h"
 #include "Quotes.h"
+#include "AsciiArt.h"
+
+#include <ftxui/component/screen_interactive.hpp>
 #include <utility>
 
 namespace tts {
@@ -10,92 +11,6 @@ namespace tts {
             {TypingState::WRONG, ftxui::Color::Red},
             {TypingState::EMPTY, ftxui::Color::GrayLight},
     };
-
-    ftxui::Element digit_to_ascii_art(int digit){
-        switch (digit) {
-            case 1:
-                return ftxui::vbox({
-                    ftxui::text("  _   \n"),
-                    ftxui::text(" / |  \n"),
-                    ftxui::text(" | |  \n"),
-                    ftxui::text(" |_|  \n"),
-                    });
-            case 2:
-                return ftxui::vbox({
-                    ftxui::text(" ___  \n"),
-                    ftxui::text("|_  ) \n"),
-                    ftxui::text(" / /  \n"),
-                    ftxui::text("/___| \n"),
-                    });
-            case 3:
-                return ftxui::vbox({
-                    ftxui::text(" ____ \n"),
-                    ftxui::text("|__ / \n"),
-                    ftxui::text(" |_ \\ \n"),
-                    ftxui::text("|___/ \n"),
-                    });
-            case 4:
-                return ftxui::vbox({
-                    ftxui::text(" _ _  \n"),
-                    ftxui::text("| | | \n"),
-                    ftxui::text("|_  _|\n"),
-                    ftxui::text("  |_| \n"),
-                    });
-            case 5:
-                return ftxui::vbox({
-                    ftxui::text(" ___  \n"),
-                    ftxui::text("| __| \n"),
-                    ftxui::text("|__ \\ \n"),
-                    ftxui::text("|___/ \n"),
-                    });
-            case 6:
-                return ftxui::vbox({
-                    ftxui::text("  __ \n"),
-                    ftxui::text(" / / \n"),
-                    ftxui::text("/ _ \\\n"),
-                    ftxui::text("\\___/\n"),
-                    });
-            case 7:
-                return ftxui::vbox({
-                    ftxui::text(" ____ \n"),
-                    ftxui::text("|__  |\n"),
-                    ftxui::text("  / / \n"),
-                    ftxui::text(" /_/  \n"),
-                    });
-            case 8:
-                return ftxui::vbox({
-                    ftxui::text(" ___  \n"),
-                    ftxui::text("( _ ) \n"),
-                    ftxui::text("/ _ \\ \n"),
-                    ftxui::text("\\___/ \n"),
-                    });
-            case 9:
-                return ftxui::vbox({
-                    ftxui::text(" ___ \n"),
-                    ftxui::text("/ _ \\\n"),
-                    ftxui::text("\\_, /\n"),
-                    ftxui::text(" /_/ \n"),
-                    });
-            case 0:
-                return ftxui::vbox({
-                    ftxui::text("  __\n"),
-                    ftxui::text(" /  \\ \n"),
-                    ftxui::text("| () |\n"),
-                    ftxui::text(" \\__/ \n"),
-                    });
-            default:
-                return ftxui::text("");
-        }
-    }
-
-    ftxui::Element to_ascii_art(int number){
-        std::string str_num = std::to_string(number);
-        std::vector<ftxui::Element> all_digits;
-        for(auto digit : str_num){
-            all_digits.push_back(digit_to_ascii_art(digit - '0'));
-        }
-        return ftxui::hbox(all_digits);
-    }
 }
 
 namespace tts::Frames {
@@ -111,17 +26,7 @@ namespace tts::Frames {
     ftxui::Component Home::render() {
         return ftxui::Renderer(this->_button, [&] {
             return ftxui::flexbox({
-                ftxui::vbox(
-                    ftxui::text("  ______            _                                      __\n"),
-                    ftxui::text(" /_  __/_  ______  (_)___  ____ __________  ___  ___  ____/ /\n"),
-                    ftxui::text("  / / / / / / __ \\/ / __ \\/ __ `/ ___/ __ \\/ _ \\/ _ \\/ __  / \n"),
-                    ftxui::text(" / / / /_/ / /_/ / / / / / /_/ (__  ) /_/ /  __/  __/ /_/ /  \n"),
-                    ftxui::text("/_/  \\__, / .___/_/_/ /_/\\__, /____/ .___/\\___/\\___/\\__,_/   \n"),
-                    ftxui::text("    /____/_/            /____/    /_/                        "),
-                    ftxui::hbox(ftxui::text("presented by "),
-                                ftxui::text("Luca") | ftxui::hyperlink("https://github.com/Lucahls")
-                    ) | ftxui::dim | ftxui::color(ftxui::Color::White)
-                ) | ftxui::color(ftxui::Color::LightGreen),
+                title_ascii_art(),
                 ftxui::flexbox({
                     this->_button->Render(),
                 }, ftxui::FlexboxConfig()
@@ -169,7 +74,7 @@ namespace tts::Frames {
     ftxui::Component TypingTerminal::render() {
         return ftxui::Renderer(this->_input_field, [&] {
             if(_timer.finished())
-                change_to_stats();
+                this->_terminal->change_to(new Stats(this->_terminal, stats));
 
             int remain = _timer.remaining();
             return ftxui::flexbox({
@@ -189,10 +94,6 @@ namespace tts::Frames {
                 .Set(ftxui::FlexboxConfig::AlignItems::Center)
                 .Set(ftxui::FlexboxConfig::Direction::Column));
         });
-    }
-
-    void TypingTerminal::change_to_stats() {
-        this->_terminal->change_to(new Stats(this->_terminal, stats));
     }
 
     void TypingTerminal::_keep_statistics(const ftxui::Event& input) {

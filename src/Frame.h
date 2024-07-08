@@ -6,7 +6,6 @@
 #include "Timer.h"
 
 namespace tts {
-    ftxui::Element int_to_ascii_art(int number);
     class TypingSpeedTerminal;
 
     enum class TypingState {
@@ -56,7 +55,6 @@ namespace tts::Frames {
         explicit TypingTerminal(tts::TypingSpeedTerminal* terminal);
         ftxui::Component render() override;
         TypingStats stats = TypingStats();
-        void change_to_stats();
     protected:
         int                           _seconds = 600;
         Timer                         _timer;
