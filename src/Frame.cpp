@@ -190,8 +190,11 @@ namespace tts::Frames {
         this->_button_restart = ftxui::Button("Restart",
                                       [&] { this->_terminal->change_to(new Frames::TypingTerminal(this->_terminal)); });
         this->_button_quit = ftxui::Button("Quit", this->_terminal->exit());
+
         // Calculation for Net WPM from https://www.speedtypingonline.com/typing-equations
         _wpm = ((_stats.correct / 5.f) - _stats.mistakes) / (seconds / 60.f);
+        if(_wpm < 0)
+            _wpm = 0;
     }
 
     ftxui::Component Stats::render() {
