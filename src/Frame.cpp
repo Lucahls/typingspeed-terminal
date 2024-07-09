@@ -4,6 +4,7 @@
 
 #include <ftxui/component/screen_interactive.hpp>
 #include <utility>
+#include <fmt/core.h>
 
 namespace tts {
     std::unordered_map<TypingState, ftxui::Color> TypingColors = {
@@ -18,23 +19,52 @@ namespace tts::Frames {
      * Home
      */
     Home::Home(TypingSpeedTerminal *terminal) : Frame(terminal) {
-        this->_button = ftxui::Button("Press [↩] to start",
+        this->_button_start = ftxui::Button("Press [↩] to start",
                                       [&] { this->_terminal->change_to(new Frames::TypingTerminal(this->_terminal)); },
                                       ftxui::ButtonOption::Simple()) | ftxui::color(ftxui::Color::LightGreen);
+        this->_button_config = ftxui::Button("Settings",
+                                      [&] { this->_terminal->change_to(new Frames::Config(this->_terminal)); });
     }
 
     ftxui::Component Home::render() {
-        return ftxui::Renderer(this->_button, [&] {
+        return ftxui::Renderer(ftxui::Container::Vertical({_button_start, _button_config}), [&] {
             return ftxui::flexbox({
                 title_ascii_art(),
-                ftxui::flexbox({
-                    this->_button->Render(),
-                }, ftxui::FlexboxConfig()
-                .Set(ftxui::FlexboxConfig::JustifyContent::Center))
+                ftxui::vbox({
+                    _button_start->Render(),
+                    _button_config->Render(),
+                })
             }, ftxui::FlexboxConfig()
             .Set(ftxui::FlexboxConfig::Direction::Column)
             .Set(ftxui::FlexboxConfig::JustifyContent::SpaceAround)
-            .Set(ftxui::FlexboxConfig::AlignContent::Center));
+            .Set(ftxui::FlexboxConfig::AlignContent::Center)
+            .Set(ftxui::FlexboxConfig::AlignItems::Center));
+        });
+    }
+
+    Config::Config(tts::TypingSpeedTerminal *terminal) : Frame(terminal) {
+        this->_button = ftxui::Button("Press [↩] to start",
+                                      [&] { this->_terminal->change_to(new Frames::TypingTerminal(this->_terminal)); },
+                                      ftxui::ButtonOption::Simple()) | ftxui::color(ftxui::Color::LightGreen);
+
+        std::vector<std::string> tags = Quotes::tags();
+        _tags = std::vector<ftxui::Component>(tags.size());
+        _tags_states = std::make_unique<bool[]>(tags.size());
+        for (int i = 0; i < tags.size(); ++i) {
+            _tags_states[i] = false;
+            _tags[i] = ftxui::Checkbox(tags[i], &_tags_states[i]);
+        }
+    }
+
+    ftxui::Component Config::render() {
+        auto container = ftxui::Container::Vertical(_tags);
+        return ftxui::Renderer(container, [&] {
+            return ftxui::flexbox({
+                ftxui::text("Settings"),
+                ftxui::hbox(container->Render()),
+                ftxui::text(fmt::format("{}", _tags_states[0])),
+                _button->Render()
+            }, ftxui::FlexboxConfig().Set(ftxui::FlexboxConfig::Direction::Column));
         });
     }
 

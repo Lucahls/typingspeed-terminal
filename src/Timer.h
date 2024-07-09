@@ -15,8 +15,6 @@ namespace tts {
         int _seconds = 0;
         std::chrono::system_clock::time_point target_time;
         bool _is_running = false;
-        //std::function<void()> _callback = nullptr;
-        //bool finished = false;
     public:
         explicit Timer(int seconds) : _seconds(seconds) {};
         void start();

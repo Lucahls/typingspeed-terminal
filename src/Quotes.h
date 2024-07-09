@@ -13,6 +13,7 @@ namespace tts {
     protected:
         static std::string _fetch_quote();
     public:
+        static std::vector<std::string> tags();
         static std::string quote();
     };
 

@@ -23,6 +23,11 @@ namespace tts {
         int mistakes = 0;
         int corrected_mistakes = 0;
     };
+
+    struct TypingConfig {
+        int seconds = 0;
+        bool online = false;
+    };
 }
 
 namespace tts::Frames {
@@ -41,13 +46,24 @@ namespace tts::Frames {
 
     class Home : public Frame {
     protected:
-        ftxui::Component _button;
+        ftxui::Component _button_start;
+        ftxui::Component _button_config;
     public:
         explicit         Home(tts::TypingSpeedTerminal* terminal);
         ftxui::Component render() override;
     };
 
-    class Stats;
+
+    class Config : public Frame {
+    private:
+        ftxui::Component _button;
+        std::vector<ftxui::Component> _tags;
+        std::unique_ptr<bool[]> _tags_states;
+    public:
+        explicit         Config(tts::TypingSpeedTerminal* terminal);
+        ftxui::Component render() override;
+    };
+
 
     class TypingTerminal : public Frame {
     public:
