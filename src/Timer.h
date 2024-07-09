@@ -14,6 +14,7 @@ namespace tts {
     private:
         int _seconds = 0;
         std::chrono::system_clock::time_point target_time;
+        bool _is_running = false;
         //std::function<void()> _callback = nullptr;
         //bool finished = false;
     public:
@@ -21,6 +22,7 @@ namespace tts {
         void start();
         int remaining() const;
         bool finished();
+        bool is_running() {return _is_running;};
     };
 
 } // tts

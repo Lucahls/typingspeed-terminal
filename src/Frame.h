@@ -22,7 +22,6 @@ namespace tts {
         int correct = 0;
         int mistakes = 0;
         int corrected_mistakes = 0;
-        std::string last = "";
     };
 }
 

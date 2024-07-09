@@ -46,10 +46,14 @@ namespace tts::Frames {
         this->_typing_states = std::vector<tts::TypingState>(_typing_text.length(), tts::TypingState::EMPTY);
         this->_input_field = ftxui::Input(&this->_input);
         this->_typing_text = Quotes::quote();
-        _timer.start();
+        //_timer.start();
         // CatchEvent is called BEFORE _input is updated,
         // therefore does not contain the currently typed key
         this->_input_field |= ftxui::CatchEvent([&](ftxui::Event event) {
+            // Start the timer on first Keyboard-Input
+            if(!_timer.is_running() && event.is_character())
+                _timer.start();
+
             if(event == ftxui::Event::Return) {
                 _keep_statistics_chars();
                 _next();
@@ -81,7 +85,7 @@ namespace tts::Frames {
 
             int remain = _timer.remaining();
             return ftxui::flexbox({
-                to_ascii_art(remain) | (remain < 15 ? ftxui::color(ftxui::Color::Orange1) : ftxui::color(ftxui::Color::White)),
+                to_ascii_art(remain) | (remain > _seconds/4 ? ftxui::color(ftxui::Color::White) : remain > _seconds/10 ? ftxui::color(ftxui::Color::Orange1) : ftxui::color(ftxui::Color::Red1)),
                 ftxui::text("seconds remaining"),
                 ftxui::text(""),
                 ftxui::hbox(_generate_colored_text(_input)),
@@ -114,8 +118,8 @@ namespace tts::Frames {
         if(!input.is_character())
             return;
 
-        stats.last = std::string(1, _typing_text[_input_index-1]);
-        if(stats.last == input.character())
+        std::string last_char = std::string(1, _typing_text[_input_index-1]);
+        if(last_char == input.character())
             stats.correct_keystrokes++;
         else
             stats.wrong_keystrokes++;
