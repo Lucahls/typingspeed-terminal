@@ -43,31 +43,42 @@ namespace tts::Frames {
     }
 
     Config::Config(tts::TypingSpeedTerminal *terminal) : Frame(terminal) {
-        this->_button = ftxui::Button("Press [↩] to start",
-                                      [&] { this->_terminal->change_to(new Frames::TypingTerminal(this->_terminal)); },
-                                      ftxui::ButtonOption::Simple()) | ftxui::color(ftxui::Color::LightGreen);
+        this->_button = ftxui::Button("Back",[&] {
+                _save_tags();
+                this->_terminal->change_to(new Frames::Home(this->_terminal));
+            }, ftxui::ButtonOption::Simple());
 
-        std::vector<std::string> tags = Quotes::tags();
-        _tags = std::vector<ftxui::Component>(tags.size());
-        _tags_states = std::make_unique<bool[]>(tags.size());
-        for (int i = 0; i < tags.size(); ++i) {
+        _tags = Quotes::tags();
+        _tags_checkbox = ftxui::Container::Vertical({});
+        _tags_states = std::make_unique<bool[]>(_tags.size());
+        for (int i = 0; i < _tags.size(); ++i) {
             _tags_states[i] = false;
-            _tags[i] = ftxui::Checkbox(tags[i], &_tags_states[i]);
+            _tags_checkbox->Add(ftxui::Checkbox(_tags[i], &_tags_states[i]));
         }
     }
 
     ftxui::Component Config::render() {
-        auto container = ftxui::Container::Vertical(_tags);
-        return ftxui::Renderer(container, [&] {
+        return ftxui::Renderer(ftxui::Container::Vertical({_tags_checkbox, _button}), [&] {
             return ftxui::flexbox({
-                ftxui::text("Settings"),
-                ftxui::hbox(container->Render()),
-                ftxui::text(fmt::format("{}", _tags_states[0])),
+                ftxui::text("Choose topics") | ftxui::bold,
+                ftxui::text(""),
+                _tags_checkbox->Render() | ftxui::vscroll_indicator | ftxui::frame | ftxui::size(ftxui::HEIGHT, ftxui::LESS_THAN, 10),
+                ftxui::hbox(ftxui::filler(), ftxui::text("")),
                 _button->Render()
-            }, ftxui::FlexboxConfig().Set(ftxui::FlexboxConfig::Direction::Column));
+            }, ftxui::FlexboxConfig()
+            .Set(ftxui::FlexboxConfig::Direction::Column)
+            .Set(ftxui::FlexboxConfig::JustifyContent::Center)
+            .Set(ftxui::FlexboxConfig::AlignContent::Center));
         });
     }
 
+    void Config::_save_tags() {
+        std::vector<std::string> selected_tags;
+        for (int i = 0; i < _tags.size(); ++i)
+            if (_tags_states[i])
+                selected_tags.push_back(_tags[i]);
+        Quotes::tags(selected_tags);
+    }
     /**
      * TypingTerminal
      */
@@ -76,7 +87,7 @@ namespace tts::Frames {
         this->_typing_states = std::vector<tts::TypingState>(_typing_text.length(), tts::TypingState::EMPTY);
         this->_input_field = ftxui::Input(&this->_input);
         this->_typing_text = Quotes::quote();
-        //_timer.start();
+
         // CatchEvent is called BEFORE _input is updated,
         // therefore does not contain the currently typed key
         this->_input_field |= ftxui::CatchEvent([&](ftxui::Event event) {

@@ -56,9 +56,12 @@ namespace tts::Frames {
 
     class Config : public Frame {
     private:
-        ftxui::Component _button;
-        std::vector<ftxui::Component> _tags;
-        std::unique_ptr<bool[]> _tags_states;
+        ftxui::Component         _button;
+        std::vector<std::string> _tags;
+        ftxui::Component         _tags_checkbox;
+        std::unique_ptr<bool[]>  _tags_states;
+        std::vector<std::string> _selected_tags;
+        void                     _save_tags();
     public:
         explicit         Config(tts::TypingSpeedTerminal* terminal);
         ftxui::Component render() override;

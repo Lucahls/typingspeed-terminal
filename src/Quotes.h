@@ -12,9 +12,11 @@ namespace tts {
     class Quotes {
     protected:
         static std::string _fetch_quote();
+        inline static std::string _query_tags = "";
     public:
+        static void                     tags(std::vector<std::string>& tags);
         static std::vector<std::string> tags();
-        static std::string quote();
+        static std::string              quote();
     };
 
 } // tts
