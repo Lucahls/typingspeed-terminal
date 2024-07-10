@@ -17,10 +17,10 @@ namespace tts {
     struct TypingStats {
         // Single Keystroke
         int correct_keystrokes = 0;
-        int wrong_keystrokes = 0;
+        int wrong_keystrokes   = 0;
         // Characters in sentence
-        int correct = 0;
-        int mistakes = 0;
+        int correct            = 0;
+        int mistakes           = 0;
         int corrected_mistakes = 0;
     };
 
@@ -43,7 +43,9 @@ namespace tts::Frames {
         virtual  ftxui::Component render() = 0;
     };
 
-
+    /**
+     * Derived Frames actually rendering something
+     */
     class Home : public Frame {
     protected:
         ftxui::Component _button_start;

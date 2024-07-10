@@ -40,11 +40,10 @@ namespace tts {
             if(count >= 12)
                 tags.push_back(name);
         }
-        //return {"Some", "Test", "Tags"};
         return tags;
     }
 
     void Quotes::tags(std::vector<std::string>& tags) {
-        _query_tags = fmt::format("{}", fmt::join(tags, ","));
+        _query_tags = fmt::format("{}", fmt::join(tags, "|"));
     }
 } // tts
