@@ -39,7 +39,14 @@ namespace tts::Frames {
     protected:
         tts::TypingSpeedTerminal* _terminal;
     public:
+        /**
+         * @param terminal Pointer to the Terminal the Frame is rendered from
+         */
         explicit Frame(tts::TypingSpeedTerminal* terminal) : _terminal(terminal) {};
+        /**
+         * Return a ftxui::Component that describes how this Frame is rendered
+         * @return ftxui::Component
+         */
         virtual  ftxui::Component render() = 0;
     };
 
