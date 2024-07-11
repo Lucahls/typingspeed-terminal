@@ -86,6 +86,7 @@ namespace tts::Frames {
         int                           _input_index = 0;
         std::string                   _typing_text;
         std::vector<tts::TypingState> _typing_states;
+        std::tuple<std::string, std::string> _quote;
         std::vector<tts::TypingState> _check_text(std::string const &text, std::string const &verify);
         std::vector<ftxui::Element>   _generate_colored_text(std::string &text);
         void                          _keep_statistics_keys(const ftxui::Event& input);

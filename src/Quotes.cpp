@@ -34,7 +34,7 @@ namespace tts {
         return tags;
     }
 
-    std::string Quotes::quote() {
+    std::tuple<std::string, std::string> Quotes::quote() {
         std::vector<std::string> filter;
         if(_filter.empty())
             filter = tags();
@@ -43,7 +43,7 @@ namespace tts {
 
         std::string movie = filter[std::rand() % filter.size()];
         int quote = std::rand() % quotes()[movie].size();
-        return quotes()[movie][quote]["quote"];
+        return {quotes()[movie][quote]["quote"], quotes()[movie][quote]["author"]};
     }
 
     void Quotes::filter(const std::vector<std::string> &filter_tags) {

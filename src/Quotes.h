@@ -26,7 +26,7 @@ namespace tts {
          * Empty result if tags do not exist.
          * @return Random quote
          */
-        static std::string quote();
+        static std::tuple<std::string, std::string> quote();
         /**
          * Get a parsed json object with all movies and quotes
          * @return json-object with quotes categorized by movie

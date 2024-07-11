@@ -88,7 +88,8 @@ namespace tts::Frames {
         : Frame(terminal), _timer(_seconds) {
         this->_typing_states = std::vector<tts::TypingState>(_typing_text.length(), tts::TypingState::EMPTY);
         this->_input_field = ftxui::Input(&this->_input);
-        this->_typing_text = Quotes::quote();
+        this->_quote = Quotes::quote();
+        this->_typing_text = std::get<0>(_quote);
 
         // CatchEvent is called BEFORE _input is updated,
         // therefore does not contain the currently typed key
@@ -137,7 +138,13 @@ namespace tts::Frames {
                 to_ascii_art(remain) | timer_color,
                 ftxui::text("seconds remaining"),
                 ftxui::text(""),
-                ftxui::hbox(_generate_colored_text(_input)),
+                ftxui::vbox({
+                    ftxui::hbox(_generate_colored_text(_input)),
+                    ftxui::hbox({
+                        ftxui::filler(),
+                        ftxui::text("~ " + std::get<1>(_quote)) | ftxui::color(ftxui::Color::GrayLight) | ftxui::dim
+                    })
+                }),
             }, ftxui::FlexboxConfig()
             .Set(ftxui::FlexboxConfig::AlignContent::Center)
             .Set(ftxui::FlexboxConfig::JustifyContent::Center)
@@ -178,7 +185,8 @@ namespace tts::Frames {
     }
 
     void TypingTerminal::_next() {
-        _typing_text = Quotes::quote();
+        _quote = Quotes::quote();
+        _typing_text = std::get<0>(_quote);
         _input = "";
         _input_index = 0;
     }
