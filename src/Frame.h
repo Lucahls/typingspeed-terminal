@@ -88,7 +88,8 @@ namespace tts::Frames {
         std::string                   _typing_text;
         std::vector<tts::TypingState> _typing_states;
         std::tuple<std::string, std::string> _quote;
-        std::vector<tts::TypingState> _check_text(std::string const &text, std::string const &verify);
+        bool                          _is_over = false;
+        static std::vector<tts::TypingState> _check_text(std::string const &text, std::string const &verify);
         std::vector<ftxui::Element>   _generate_colored_text(std::string &text);
         void                          _keep_statistics_keys(const ftxui::Event& input);
         void                          _keep_statistics_chars();
@@ -106,6 +107,7 @@ namespace tts::Frames {
         ftxui::Component _button_quit;
         TypingStats      _stats;
         int              _wpm;
+        int              _accuracy;
     public:
         explicit Stats(tts::TypingSpeedTerminal* terminal, TypingStats& stats, int seconds);
         ftxui::Component render() override;

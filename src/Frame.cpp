@@ -46,11 +46,12 @@ namespace tts::Frames {
      * Config
      */
     Config::Config(tts::TypingSpeedTerminal *terminal) : Frame(terminal) {
-        this->_button = ftxui::Button("Back",[&] {
+        this->_button = ftxui::Button(" ← Go Back ",[&] {
                 _save_tags();
                 this->_terminal->change_to(std::make_unique<Home>(this->_terminal));
             }, ftxui::ButtonOption::Simple());
 
+        // Build the list of tags from which users can choose in config
         _tags = Quotes::tags();
         _tags_checkbox = ftxui::Container::Vertical({});
         _tags_states = std::make_unique<bool[]>(_tags.size());
@@ -63,10 +64,14 @@ namespace tts::Frames {
     ftxui::Component Config::render() {
         return ftxui::Renderer(ftxui::Container::Vertical({_tags_checkbox, _button}), [&] {
             return ftxui::flexbox({
-                ftxui::text("Choose topics") | ftxui::bold,
+                ftxui::text("Choose movies") | ftxui::bold,
+                ftxui::text("Only quotes from selected") | ftxui::dim,
+                ftxui::text("movies are shown while typing") | ftxui::dim,
                 ftxui::text(""),
-                _tags_checkbox->Render() | ftxui::vscroll_indicator | ftxui::frame | ftxui::size(ftxui::HEIGHT, ftxui::LESS_THAN, 10),
-                ftxui::hbox(ftxui::filler(), ftxui::text("")),
+                ftxui::flexbox({
+                    _tags_checkbox->Render() | ftxui::vscroll_indicator | ftxui::frame | ftxui::size(ftxui::HEIGHT, ftxui::LESS_THAN, 10)
+                }, ftxui::FlexboxConfig().Set(ftxui::FlexboxConfig::Direction::Row)),
+                ftxui::text(""),
                 _button->Render()
             }, ftxui::FlexboxConfig()
             .Set(ftxui::FlexboxConfig::Direction::Column)
@@ -100,11 +105,6 @@ namespace tts::Frames {
             if(!_timer.is_running() && event.is_character())
                 _timer.start();
 
-            if(event == ftxui::Event::Return) {
-                _keep_statistics_chars();
-                _next();
-                return true;
-            }
             // Manually keep track of the cursor position in the input,
             // as there seems to be no way to get it from the input component directly
             if(event.is_character() and _input.length() < _typing_text.length()) {
@@ -124,7 +124,11 @@ namespace tts::Frames {
 
     ftxui::Component TypingTerminal::render() {
         return ftxui::Renderer(this->_input_field, [&] {
-            if(_timer.finished()) {
+            // _is_over prevents the renderer from calling this piece multiple times
+            // (even though this shouldn't happen in the first place)
+            // and therefore calculating the statistics too often
+            if(_timer.finished() && !_is_over) {
+                _is_over = true;
                 _keep_statistics_chars();
                 this->_terminal->change_to(std::make_unique<Stats>(this->_terminal,
                                                                          stats, _seconds));
@@ -133,16 +137,22 @@ namespace tts::Frames {
             int remain = _timer.remaining();
             ftxui::Decorator timer_color = ftxui::color(ftxui::Color::White);
             if(remain < _seconds/10)
-                timer_color = ftxui::color(ftxui::Color::Red1);
+                timer_color = ftxui::color(ftxui::Color::RedLight);
             else if(remain < _seconds/4)
-                timer_color = ftxui::color(ftxui::Color::Orange1);
+                timer_color = ftxui::color(ftxui::Color::YellowLight);
+
+            ftxui::Element colored_text = ftxui::hbox(_generate_colored_text(_input));
+
+            // Last character was inputted for this sentence, switch to next
+            if(_input_index == _typing_text.length())
+                _next();
 
             return ftxui::flexbox({
                 to_ascii_art(remain) | timer_color,
                 ftxui::text("seconds remaining"),
                 ftxui::text(""),
                 ftxui::vbox({
-                    ftxui::hbox(_generate_colored_text(_input)),
+                    colored_text,
                     ftxui::hbox({
                         ftxui::filler(),
                         ftxui::text("~ " + std::get<1>(_quote)) | ftxui::color(ftxui::Color::GrayLight) | ftxui::dim
@@ -188,6 +198,7 @@ namespace tts::Frames {
     }
 
     void TypingTerminal::_next() {
+        _keep_statistics_chars();
         _quote = Quotes::quote();
         _typing_text = std::get<0>(_quote);
         _input = "";
@@ -212,11 +223,12 @@ namespace tts::Frames {
         std::vector<ftxui::Element> elements = std::vector<ftxui::Element>(_typing_states.size());
 
         for (int i = 0; i < _typing_states.size(); i++) {
-            // Color each character responding to its correctness
+            // Color each character corresponding to its correctness
             ftxui::Element el = ftxui::text(std::string{this->_typing_text[i]});
             if(i != _input_index)
                 el |= ftxui::color(tts::TypingColors[_typing_states[i]]);
             else {
+                // Highlight the cursor position
                 el |= ftxui::color(ftxui::Color::Black);
                 el |= ftxui::bgcolor(ftxui::Color::White);
             }
@@ -234,27 +246,46 @@ namespace tts::Frames {
      */
     Stats::Stats(TypingSpeedTerminal *terminal, TypingStats& stats, int seconds)
         : Frame(terminal), _stats(stats) {
-        this->_button_restart = ftxui::Button("Restart", [&] {
+        this->_button_restart = ftxui::Button(" ⟳  Restart ", [&] {
                 this->_terminal->change_to(std::make_unique<TypingTerminal>(this->_terminal));
         });
-        this->_button_quit = ftxui::Button("Quit", this->_terminal->exit());
+        this->_button_quit = ftxui::Button(" × Quit ", this->_terminal->exit());
 
         // Calculation for Net WPM from https://www.speedtypingonline.com/typing-equations
         _wpm = ((_stats.correct / 5.f) - _stats.mistakes) / (seconds / 60.f);
         if(_wpm < 0)
             _wpm = 0;
+        _accuracy = (_stats.correct_keystrokes / (float)(_stats.correct_keystrokes + _stats.wrong_keystrokes)) * 100;
     }
 
     ftxui::Component Stats::render() {
         return ftxui::Renderer(ftxui::Container::Horizontal({this->_button_quit,
-                                                             this->_button_restart}) , [&] {
+                                                                  this->_button_restart}), [&] {
+
+            ftxui::Decorator wpm_color = ftxui::color(ftxui::Color::LightGreen);
+            if(_wpm < 30)
+                wpm_color = ftxui::color(ftxui::Color::RedLight);
+            else if(_wpm < 40)
+                wpm_color = ftxui::color(ftxui::Color::YellowLight);
+
+            ftxui::Decorator accuracy_color = ftxui::color(ftxui::Color::LightGreen);
+            if(_accuracy < 80)
+                accuracy_color = ftxui::color(ftxui::Color::RedLight);
+            else if(_accuracy < 90)
+                accuracy_color = ftxui::color(ftxui::Color::YellowLight);
+
             return ftxui::flexbox({
                 // ---- Header ----
-               to_ascii_art(_wpm) | ftxui::bold | ftxui::color(ftxui::Color::LightGreen),
-               ftxui::text("Words per minute"),
-               ftxui::text(""),
+                to_ascii_art(_wpm) | wpm_color,
+                ftxui::text("Words per minute"),
+                ftxui::hbox({
+                   ftxui::text(std::to_string(_accuracy) + "%") | accuracy_color,
+                   ftxui::text(" accuracy")
+                }),
+                ftxui::text(""),
 
-               // ---- Detailed stats ----
+                // ---- Detailed stats ----
+                /*
                 ftxui::flexbox({
                     ftxui::vbox(
                         ftxui::text("Keystrokes") | ftxui::bold,
@@ -294,12 +325,13 @@ namespace tts::Frames {
                 .Set(ftxui::FlexboxConfig::Direction::Row)
                 .Set(ftxui::FlexboxConfig::JustifyContent::SpaceAround))
                 | ftxui::size(ftxui::WIDTH, ftxui::GREATER_THAN, 50),
+                 */
                 ftxui::text(""),
 
                 // ---- Buttons ----
                 ftxui::hbox({
+                        ftxui::filler(),
                         this->_button_quit->Render(),
-                        ftxui::text("     "),
                         this->_button_restart->Render(),
                 })
             }, ftxui::FlexboxConfig()
