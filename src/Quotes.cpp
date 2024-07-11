@@ -41,8 +41,12 @@ namespace tts {
         else
             filter = _filter;
 
-        std::string movie = filter[std::rand() % filter.size()];
-        int quote = std::rand() % quotes()[movie].size();
+        std::random_device rd; // obtain a random number from hardware
+        std::uniform_int_distribution<> dist_movie(0, filter.size() - 1);
+        std::string movie = filter[dist_movie(rd)];
+        std::uniform_int_distribution<> dist_quote(0, quotes()[movie].size() - 1);
+        int quote = dist_quote(rd);
+
         return {quotes()[movie][quote]["quote"], quotes()[movie][quote]["author"]};
     }
 
