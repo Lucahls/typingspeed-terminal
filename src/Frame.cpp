@@ -78,7 +78,7 @@ namespace tts::Frames {
         for (int i = 0; i < _tags.size(); ++i)
             if (_tags_states[i])
                 selected_tags.push_back(_tags[i]);
-        Quotes::tags(selected_tags);
+        Quotes::filter(selected_tags);
     }
 
     /**

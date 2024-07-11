@@ -3,47 +3,52 @@
 //
 
 #include "Quotes.h"
-#include <cpr/cpr.h>
+
 #include <nlohmann/json.hpp>
 #include <fmt/core.h>
-#include <fmt/ranges.h>
+#include <fstream>
+#include <random>
 
 namespace tts {
-    std::string Quotes::_fetch_quote() {
-        std::string base = "https://api.quotable.io/random?maxLength=80";
-        std::string request;
-        if(!_query_tags.empty())
-            request = fmt::format("{}&tags={}", base, _query_tags);
-        else
-            request = base;
-
-        cpr::Response r = cpr::Get(cpr::Url{request});
-        if(r.status_code != 200)
-            return "API is down, this is a placeholder";
-        return nlohmann::json::parse(r.text)["content"];
+    nlohmann::json& Quotes::quotes() {
+        if(_quotes.is_null())
+            _quotes = _fetch_quotes_from_file("../quotes.json");
+        return _quotes;
     }
 
-    std::string Quotes::quote() {
-        return _fetch_quote();
+    nlohmann::json Quotes::_fetch_quotes_from_file(const std::string& path) {
+        std::ifstream file(path);
+        return nlohmann::json::parse(file);
     }
 
     std::vector<std::string> Quotes::tags(){
-        cpr::Response r = cpr::Get(
-                cpr::Url{"https://api.quotable.io/tags"});
-        if(r.status_code != 200)
-            return {};
+        if(_tags.empty())
+            _tags = _fetch_tags_from_quotes();
+        return _tags;
+    }
 
+    std::vector<std::string> Quotes::_fetch_tags_from_quotes() {
         std::vector<std::string> tags;
-        for(const auto& tag : nlohmann::json::parse(r.text)) {
-            std::string name = tag["slug"];
-            int count = tag["quoteCount"];
-            if(count >= 12)
-                tags.push_back(name);
-        }
+        for(auto& [movie, _] : quotes().items())
+            tags.push_back(movie);
         return tags;
     }
 
-    void Quotes::tags(std::vector<std::string>& tags) {
-        _query_tags = fmt::format("{}", fmt::join(tags, "|"));
+    std::string Quotes::quote() {
+        std::vector<std::string> filter;
+        if(_filter.empty())
+            filter = tags();
+        else
+            filter = _filter;
+
+        std::string movie = filter[std::rand() % filter.size()];
+        int quote = std::rand() % quotes()[movie].size();
+        return quotes()[movie][quote]["quote"];
     }
+
+    void Quotes::filter(const std::vector<std::string> &filter_tags) {
+        _filter = filter_tags;
+    }
+
+
 } // tts
