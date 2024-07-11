@@ -80,7 +80,7 @@ namespace tts::Frames {
 
     class TypingTerminal : public Frame {
     protected:
-        int                           _seconds = 10;
+        int                           _seconds = 60;
         Timer                         _timer;
         std::string                   _input;
         ftxui::Component              _input_field;
