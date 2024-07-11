@@ -42,10 +42,12 @@ namespace tts {
             filter = _filter;
 
         std::random_device rd; // obtain a random number from hardware
+        std::mt19937 gen(rd()); // seed the generator
+
         std::uniform_int_distribution<> dist_movie(0, filter.size() - 1);
-        std::string movie = filter[dist_movie(rd)];
+        std::string movie = filter[dist_movie(gen)];
         std::uniform_int_distribution<> dist_quote(0, quotes()[movie].size() - 1);
-        int quote = dist_quote(rd);
+        int quote = dist_quote(gen);
 
         return {quotes()[movie][quote]["quote"], quotes()[movie][quote]["author"]};
     }
