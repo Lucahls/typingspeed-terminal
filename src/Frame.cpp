@@ -17,11 +17,13 @@ namespace tts::Frames {
      * Home
      */
     Home::Home(TypingSpeedTerminal *terminal) : Frame(terminal) {
-        this->_button_start = ftxui::Button("Press [↩] to start",
-                                      [&] { this->_terminal->change_to(new Frames::TypingTerminal(this->_terminal)); },
-                                      ftxui::ButtonOption::Simple()) | ftxui::color(ftxui::Color::LightGreen);
-        this->_button_config = ftxui::Button("Settings",
-                                      [&] { this->_terminal->change_to(new Frames::Config(this->_terminal)); });
+        this->_button_start = ftxui::Button("Press [↩] to start", [&] {
+            this->_terminal->change_to(std::make_unique<TypingTerminal>(this->_terminal));
+            }, ftxui::ButtonOption::Simple()) | ftxui::color(ftxui::Color::LightGreen);
+
+        this->_button_config = ftxui::Button("Settings", [&] {
+            this->_terminal->change_to(std::make_unique<Config>(this->_terminal));
+        });
     }
 
     ftxui::Component Home::render() {
@@ -46,7 +48,7 @@ namespace tts::Frames {
     Config::Config(tts::TypingSpeedTerminal *terminal) : Frame(terminal) {
         this->_button = ftxui::Button("Back",[&] {
                 _save_tags();
-                this->_terminal->change_to(new Frames::Home(this->_terminal));
+                this->_terminal->change_to(std::make_unique<Home>(this->_terminal));
             }, ftxui::ButtonOption::Simple());
 
         _tags = Quotes::tags();
@@ -124,7 +126,8 @@ namespace tts::Frames {
         return ftxui::Renderer(this->_input_field, [&] {
             if(_timer.finished()) {
                 _keep_statistics_chars();
-                this->_terminal->change_to(new Stats(this->_terminal, stats, _seconds));
+                this->_terminal->change_to(std::make_unique<Stats>(this->_terminal,
+                                                                         stats, _seconds));
             }
 
             int remain = _timer.remaining();
@@ -232,7 +235,7 @@ namespace tts::Frames {
     Stats::Stats(TypingSpeedTerminal *terminal, TypingStats& stats, int seconds)
         : Frame(terminal), _stats(stats) {
         this->_button_restart = ftxui::Button("Restart", [&] {
-                this->_terminal->change_to(new Frames::TypingTerminal(this->_terminal));
+                this->_terminal->change_to(std::make_unique<TypingTerminal>(this->_terminal));
         });
         this->_button_quit = ftxui::Button("Quit", this->_terminal->exit());
 

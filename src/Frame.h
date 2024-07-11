@@ -48,6 +48,7 @@ namespace tts::Frames {
          * @return ftxui::Component
          */
         virtual  ftxui::Component render() = 0;
+        virtual ~Frame() = default;
     };
 
     /**

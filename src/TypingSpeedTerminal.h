@@ -15,8 +15,8 @@ namespace tts {
      */
     class TypingSpeedTerminal {
     private:
-        tts::Frames::Frame*      _frame;
-        tts::Frames::Frame*      _next_frame;
+        std::unique_ptr<tts::Frames::Frame>      _frame;
+        std::unique_ptr<tts::Frames::Frame>      _next_frame;
         ftxui::ScreenInteractive _screen = ftxui::ScreenInteractive::Fullscreen();
         ftxui::Closure           _end_loop;
         bool                     _is_running = false;
@@ -33,7 +33,7 @@ namespace tts {
          * Change the currently rendered screen
          * @param screen Next screen to be rendered
          */
-        void change_to(tts::Frames::Frame* screen);
+        void change_to(std::unique_ptr<tts::Frames::Frame> screen);
     };
 
 }
