@@ -9,18 +9,18 @@
 namespace tts {
     void Timer::start() {
         auto start_time = std::chrono::system_clock::now();
-        target_time = start_time + std::chrono::duration(std::chrono::seconds(_seconds));
+        _target_time = start_time + std::chrono::duration(std::chrono::seconds(_seconds));
         _is_running = true;
     }
 
     int Timer::remaining() const {
         if(_is_running)
-            return std::chrono::duration_cast<std::chrono::seconds>(target_time - std::chrono::system_clock::now()).count();
+            return std::chrono::duration_cast<std::chrono::seconds>(_target_time - std::chrono::system_clock::now()).count();
         else
             return _seconds;
     }
 
     bool Timer::finished() {
-        return _is_running && std::chrono::system_clock::now() > target_time;
+        return _is_running && std::chrono::system_clock::now() > _target_time;
     }
 } // tts

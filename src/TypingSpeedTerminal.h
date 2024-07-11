@@ -10,6 +10,9 @@ namespace tts {
         class Frame;
     }
 
+    /**
+     * Typing-Speed-Terminal
+     */
     class TypingSpeedTerminal {
     private:
         tts::Frames::Frame*      _frame;
@@ -19,9 +22,18 @@ namespace tts {
         bool                     _is_running = false;
     public:
         TypingSpeedTerminal();
-        void                  start();
+        /* Start the game */
+        void start();
+        /**
+         * Return a function that can exit the game.
+         * @return Exit closure
+         */
         std::function<void()> exit();
-        void                  change_to(tts::Frames::Frame* screen);
+        /**
+         * Change the currently rendered screen
+         * @param screen Next screen to be rendered
+         */
+        void change_to(tts::Frames::Frame* screen);
     };
 
 }

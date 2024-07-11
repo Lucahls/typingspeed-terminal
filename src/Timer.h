@@ -11,9 +11,9 @@
 namespace tts {
 
     class Timer {
-    private:
+    protected:
         int                                   _seconds = 0;
-        std::chrono::system_clock::time_point target_time;
+        std::chrono::system_clock::time_point _target_time;
         bool                                  _is_running = false;
     public:
         /**
@@ -28,7 +28,7 @@ namespace tts {
         void     start();
         int      remaining() const;
         bool     finished();
-        bool     is_running() {return _is_running;};
+        bool     is_running() const {return _is_running;};
     };
 
 } // tts

@@ -64,7 +64,7 @@ namespace tts::Frames {
 
 
     class Config : public Frame {
-    private:
+    protected:
         ftxui::Component         _button;
         std::vector<std::string> _tags;
         ftxui::Component         _tags_checkbox;
@@ -78,10 +78,6 @@ namespace tts::Frames {
 
 
     class TypingTerminal : public Frame {
-    public:
-        explicit TypingTerminal(tts::TypingSpeedTerminal* terminal);
-        ftxui::Component render() override;
-        TypingStats stats = TypingStats();
     protected:
         int                           _seconds = 10;
         Timer                         _timer;
@@ -95,6 +91,10 @@ namespace tts::Frames {
         void                          _keep_statistics_keys(const ftxui::Event& input);
         void                          _keep_statistics_chars();
         void                          _next();
+    public:
+        explicit TypingTerminal(tts::TypingSpeedTerminal* terminal);
+        ftxui::Component render() override;
+        TypingStats stats = TypingStats();
     };
 
 
