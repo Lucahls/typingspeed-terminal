@@ -57,7 +57,8 @@ namespace tts::Frames {
         _tags_states = std::make_unique<bool[]>(_tags.size());
         for (int i = 0; i < _tags.size(); ++i) {
             _tags_states[i] = false;
-            _tags_checkbox->Add(ftxui::Checkbox(_tags[i], &_tags_states[i]));
+            std ::string label = std::get<0>(_tags[i]) + "(" + std::to_string(std::get<1>(_tags[i])) + ")";
+            _tags_checkbox->Add(ftxui::Checkbox(label, &_tags_states[i]));
         }
     }
 
@@ -84,7 +85,7 @@ namespace tts::Frames {
         std::vector<std::string> selected_tags;
         for (int i = 0; i < _tags.size(); ++i)
             if (_tags_states[i])
-                selected_tags.push_back(_tags[i]);
+                selected_tags.push_back(std::get<0>(_tags[i]));
         Quotes::filter(selected_tags);
     }
 
@@ -150,6 +151,7 @@ namespace tts::Frames {
             return ftxui::flexbox({
                 to_ascii_art(remain) | timer_color,
                 ftxui::text("seconds remaining"),
+                ftxui::text(""),
                 ftxui::text(""),
                 ftxui::vbox({
                     colored_text,

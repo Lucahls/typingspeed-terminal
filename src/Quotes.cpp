@@ -1,7 +1,3 @@
-//
-// Created by Luca Hessels on 21.06.24.
-//
-
 #include "Quotes.h"
 
 #include <nlohmann/json.hpp>
@@ -21,31 +17,38 @@ namespace tts {
         return nlohmann::json::parse(file);
     }
 
-    std::vector<std::string> Quotes::tags(){
+    std::vector<std::tuple<std::string, int>> Quotes::tags(){
         if(_tags.empty())
             _tags = _fetch_tags_from_quotes();
         return _tags;
     }
 
-    std::vector<std::string> Quotes::_fetch_tags_from_quotes() {
-        std::vector<std::string> tags;
-        for(auto& [movie, _] : quotes().items())
-            tags.push_back(movie);
+    std::vector<std::tuple<std::string, int>> Quotes::_fetch_tags_from_quotes() {
+        std::vector<std::tuple<std::string, int>> tags;
+        for(auto& [movie, quotes] : quotes().items())
+            tags.push_back({movie, quotes.size()});
         return tags;
     }
 
     std::tuple<std::string, std::string> Quotes::quote() {
         std::vector<std::string> filter;
-        if(_filter.empty())
-            filter = tags();
-        else
+        if(!_filter.empty())
             filter = _filter;
+        else {
+            // Extract only the movie name from the tags
+            std::vector<std::string> movies(tags().size());
+            std::transform(tags().begin(), tags().end(), movies.begin(),
+                           [](const std::tuple<std::string, int> &tuple) {
+                return std::get<0>(tuple);
+            });
+            filter = movies;
+        }
 
-        std::random_device rd; // obtain a random number from hardware
-        std::mt19937 gen(rd()); // seed the generator
-
+        std::random_device rd;
+        std::mt19937 gen(rd());
         std::uniform_int_distribution<> dist_movie(0, filter.size() - 1);
         std::string movie = filter[dist_movie(gen)];
+
         std::uniform_int_distribution<> dist_quote(0, quotes()[movie].size() - 1);
         int quote = dist_quote(gen);
 

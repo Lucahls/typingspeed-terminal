@@ -67,7 +67,7 @@ namespace tts::Frames {
     class Config : public Frame {
     protected:
         ftxui::Component         _button;
-        std::vector<std::string> _tags;
+        std::vector<std::tuple<std::string, int>> _tags;
         ftxui::Component         _tags_checkbox;
         std::unique_ptr<bool[]>  _tags_states;
         std::vector<std::string> _selected_tags;
@@ -80,7 +80,7 @@ namespace tts::Frames {
 
     class TypingTerminal : public Frame {
     protected:
-        int                           _seconds = 60;
+        int                           _seconds = 15;
         Timer                         _timer;
         std::string                   _input;
         ftxui::Component              _input_field;
