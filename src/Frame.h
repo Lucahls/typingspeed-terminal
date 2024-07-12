@@ -107,8 +107,8 @@ namespace tts::Frames {
         bool                                 _is_over = false;
         /**
          * compare a typed text with the expected text that needs to be entered
-         * @param text Text that was typed
-         * @param verify Text that must be typed
+         * @param text Text must be typed
+         * @param verify Text that was typed
          * @return Typing-states for each character in the 'verify'-text
          */
         static std::vector<tts::TypingState> _check_text(std::string const &text, std::string const &verify);
