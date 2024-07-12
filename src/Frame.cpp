@@ -17,15 +17,15 @@ namespace tts::Frames {
      * Home
      */
     Home::Home(TypingSpeedTerminal *terminal) : Frame(terminal) {
-        this->_button_start = ftxui::Button(" Start Typing ", [&] {
+        this->_button_start = ftxui::Button(" ↩ Start Typing ", [&] {
             this->_terminal->change_to(std::make_unique<TypingTerminal>(this->_terminal));
             }, ftxui::ButtonOption::Simple()) | ftxui::color(ftxui::Color::LightGreen);
 
-        this->_button_config = ftxui::Button(" Settings ", [&] {
+        this->_button_config = ftxui::Button(" ☰ Settings ", [&] {
             this->_terminal->change_to(std::make_unique<Config>(this->_terminal));
         });
 
-        this->_button_quit = ftxui::Button(" Quit ", this->_terminal->exit());
+        this->_button_quit = ftxui::Button(" × Quit ", this->_terminal->exit());
     }
 
     ftxui::Component Home::render() {
@@ -79,7 +79,7 @@ namespace tts::Frames {
                 ftxui::text("movies are shown while typing") | ftxui::dim,
                 ftxui::text(""),
                 ftxui::flexbox({
-                    _tags_checkbox->Render() | ftxui::vscroll_indicator | ftxui::frame | ftxui::size(ftxui::HEIGHT, ftxui::LESS_THAN, 10)
+                    _tags_checkbox->Render() | ftxui::vscroll_indicator | ftxui::frame | ftxui::size(ftxui::HEIGHT, ftxui::LESS_THAN, 8)
                 }, ftxui::FlexboxConfig().Set(ftxui::FlexboxConfig::Direction::Row)),
                 ftxui::text(""),
                 _button->Render()
@@ -261,7 +261,7 @@ namespace tts::Frames {
                 this->_terminal->change_to(std::make_unique<TypingTerminal>(this->_terminal));
         });
 
-        this->_button_config = ftxui::Button(" Settings ", [&] {
+        this->_button_config = ftxui::Button(" ☰ Settings ", [&] {
             this->_terminal->change_to(std::make_unique<Config>(this->_terminal));
         });
 
@@ -295,12 +295,16 @@ namespace tts::Frames {
 
             return ftxui::flexbox({
                 // ---- Header ----
-                to_ascii_art(_wpm) | wpm_color,
-                ftxui::text("Words per minute"),
-                ftxui::hbox({
-                   ftxui::text(std::to_string(_accuracy) + "%") | accuracy_color,
-                   ftxui::text(" accuracy")
+                ftxui::vbox({
+                        to_ascii_art(_wpm) | wpm_color,
+                        ftxui::text(""),
+                        ftxui::text("Words per minute"),
+                        ftxui::hbox({
+                                ftxui::text(std::to_string(_accuracy) +"%") | accuracy_color,
+                                ftxui::text(" accuracy")
+                        }),
                 }),
+                ftxui::text(""),
                 ftxui::text(""),
 
                 // ---- Detailed stats ----
