@@ -307,50 +307,6 @@ namespace tts::Frames {
                 ftxui::text(""),
                 ftxui::text(""),
 
-                // ---- Detailed stats ----
-                /*
-                ftxui::flexbox({
-                    ftxui::vbox(
-                        ftxui::text("Keystrokes") | ftxui::bold,
-                        ftxui::flexbox({
-                            ftxui::vbox(
-                                ftxui::text("Total"),
-                                ftxui::text("Correct"),
-                                ftxui::text("Wrong")
-                            ) | ftxui::dim,
-                            ftxui::vbox(
-                                ftxui::text(std::to_string(_stats.correct_keystrokes + _stats.wrong_keystrokes)),
-                                ftxui::text(std::to_string(_stats.correct_keystrokes)),
-                                ftxui::text(std::to_string(_stats.wrong_keystrokes))
-                            )
-                        }, ftxui::FlexboxConfig()
-                        .Set(ftxui::FlexboxConfig::Direction::Row)
-                        .Set(ftxui::FlexboxConfig::JustifyContent::SpaceBetween))
-                    ),
-                    ftxui::vbox(
-                        ftxui::text("Characters") | ftxui::bold,
-                        ftxui::flexbox({
-                            ftxui::vbox(
-                                ftxui::text("Total"),
-                                ftxui::text("Correct"),
-                                ftxui::text("Wrong")
-                            ) | ftxui::dim,
-                            ftxui::vbox(
-                                ftxui::text(std::to_string(_stats.correct + _stats.mistakes)),
-                                ftxui::text(std::to_string(_stats.correct)),
-                                ftxui::text(std::to_string(_stats.mistakes))
-                            )
-                        }, ftxui::FlexboxConfig()
-                        .Set(ftxui::FlexboxConfig::Direction::Row)
-                        .Set(ftxui::FlexboxConfig::JustifyContent::Stretch))
-                    ),
-                }, ftxui::FlexboxConfig()
-                .Set(ftxui::FlexboxConfig::Direction::Row)
-                .Set(ftxui::FlexboxConfig::JustifyContent::SpaceAround))
-                | ftxui::size(ftxui::WIDTH, ftxui::GREATER_THAN, 50),
-                 */
-                ftxui::text(""),
-
                 // ---- Buttons ----
                 ftxui::vbox({
                         _button_restart->Render(),

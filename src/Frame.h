@@ -90,7 +90,7 @@ namespace tts::Frames {
      */
     class TypingTerminal : public Frame {
     protected:
-        int                                  _seconds = 15;
+        int                                  _seconds = 60;
         Timer                                _timer;
         /** Currently inputted characters by the user */
         std::string                          _input;
