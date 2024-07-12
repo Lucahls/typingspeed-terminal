@@ -6,6 +6,7 @@
 
 namespace tts {
 
+    // Forward declaration
     namespace Frames {
         class Frame;
     }
@@ -15,14 +16,13 @@ namespace tts {
      */
     class TypingSpeedTerminal {
     private:
-        std::unique_ptr<tts::Frames::Frame>      _frame;
-        std::unique_ptr<tts::Frames::Frame>      _next_frame;
-        ftxui::ScreenInteractive _screen = ftxui::ScreenInteractive::Fullscreen();
-        ftxui::Closure           _end_loop;
-        bool                     _is_running = false;
+        std::unique_ptr<tts::Frames::Frame> _frame;
+        std::unique_ptr<tts::Frames::Frame> _next_frame;
+        ftxui::ScreenInteractive            _screen = ftxui::ScreenInteractive::Fullscreen();
+        bool                                _is_running = false;
     public:
         TypingSpeedTerminal();
-        /* Start the game */
+        /* Start the game. Use exit-closure to stop. */
         void start();
         /**
          * Return a function that can exit the game.

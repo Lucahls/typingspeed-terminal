@@ -6,21 +6,16 @@
 #include <random>
 
 namespace tts {
-    nlohmann::json& Quotes::quotes() {
-        if(_quotes.is_null())
-            _quotes = _fetch_quotes_from_file("../quotes.json");
-        return _quotes;
-    }
 
     nlohmann::json Quotes::_fetch_quotes_from_file(const std::string& path) {
         std::ifstream file(path);
         return nlohmann::json::parse(file);
     }
 
-    std::vector<std::tuple<std::string, int>> Quotes::tags(){
-        if(_tags.empty())
-            _tags = _fetch_tags_from_quotes();
-        return _tags;
+    nlohmann::json& Quotes::quotes() {
+        if(_quotes.is_null())
+            _quotes = _fetch_quotes_from_file("../quotes.json");
+        return _quotes;
     }
 
     std::vector<std::tuple<std::string, int>> Quotes::_fetch_tags_from_quotes() {
@@ -30,7 +25,14 @@ namespace tts {
         return tags;
     }
 
+    std::vector<std::tuple<std::string, int>> Quotes::tags(){
+        if(_tags.empty())
+            _tags = _fetch_tags_from_quotes();
+        return _tags;
+    }
+
     std::tuple<std::string, std::string> Quotes::quote() {
+
         std::vector<std::string> filter;
         if(!_filter.empty())
             filter = _filter;
@@ -44,8 +46,9 @@ namespace tts {
             filter = movies;
         }
 
+        // Select a random quote from a random movie
         std::random_device rd;
-        std::mt19937 gen(rd());
+        std::mt19937       gen(rd());
         std::uniform_int_distribution<> dist_movie(0, filter.size() - 1);
         std::string movie = filter[dist_movie(gen)];
 

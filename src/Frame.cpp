@@ -55,7 +55,7 @@ namespace tts::Frames {
      * Config
      */
     Config::Config(tts::TypingSpeedTerminal *terminal) : Frame(terminal) {
-        this->_button = ftxui::Button(" ← Go Back ",[&] {
+        this->_button_back = ftxui::Button(" ← Go Back ",[&] {
                 _save_tags();
                 this->_terminal->change_to(std::make_unique<Home>(this->_terminal));
             }, ftxui::ButtonOption::Simple());
@@ -72,7 +72,7 @@ namespace tts::Frames {
     }
 
     ftxui::Component Config::render() {
-        return ftxui::Renderer(ftxui::Container::Vertical({_tags_checkbox, _button}), [&] {
+        return ftxui::Renderer(ftxui::Container::Vertical({_tags_checkbox, _button_back}), [&] {
             return ftxui::flexbox({
                 ftxui::text("Choose movies") | ftxui::bold,
                 ftxui::text("Only quotes from selected") | ftxui::dim,
@@ -82,7 +82,7 @@ namespace tts::Frames {
                     _tags_checkbox->Render() | ftxui::vscroll_indicator | ftxui::frame | ftxui::size(ftxui::HEIGHT, ftxui::LESS_THAN, 8)
                 }, ftxui::FlexboxConfig().Set(ftxui::FlexboxConfig::Direction::Row)),
                 ftxui::text(""),
-                _button->Render()
+                _button_back->Render()
             }, ftxui::FlexboxConfig()
             .Set(ftxui::FlexboxConfig::Direction::Column)
             .Set(ftxui::FlexboxConfig::JustifyContent::Center)
@@ -110,7 +110,7 @@ namespace tts::Frames {
 
         // CatchEvent is called BEFORE _input is updated,
         // therefore does not contain the currently typed key
-        this->_input_field |= ftxui::CatchEvent([&](ftxui::Event event) {
+        this->_input_field |= ftxui::CatchEvent([&](const ftxui::Event& event) {
             // Start the timer on first Keyboard-Input
             if(!_timer.is_running() && event.is_character())
                 _timer.start();
@@ -229,7 +229,7 @@ namespace tts::Frames {
         return result;
     }
 
-    std::vector<ftxui::Element> TypingTerminal::_generate_colored_text(std::string &text) {
+    std::vector<ftxui::Element> TypingTerminal::_generate_colored_text(const std::string &text) {
         _typing_states = _check_text(this->_typing_text, text);
         std::vector<ftxui::Element> elements = std::vector<ftxui::Element>(_typing_states.size());
 

@@ -6,14 +6,17 @@
 
 namespace tts {
 
+    /**
+     * Handle loading and getting of quotes
+     */
     class Quotes {
     protected:
         /** Singleton storing quotes parsed from quotes-file */
-        inline static nlohmann::json _quotes;
+        inline static nlohmann::json                           _quotes;
         /** Singleton storing movies an the amount of quotes within this tag */
         inline static std::vector<std::tuple<std::string, int>> _tags;
         /** Filter quotes with these tags */
-        inline static std::vector<std::string> _filter;
+        inline static std::vector<std::string>                  _filter;
         /**
          * Parse the .json containing all quotes
          * @param filename Path to quotes.json

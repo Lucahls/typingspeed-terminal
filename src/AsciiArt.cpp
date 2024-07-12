@@ -1,7 +1,3 @@
-//
-// Created by Luca Hessels on 08.07.24.
-//
-
 #include "AsciiArt.h"
 
 namespace tts{

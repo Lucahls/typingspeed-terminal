@@ -22,13 +22,12 @@ namespace tts {
          * @param seconds Duration in seconds
          */
         explicit Timer(int seconds) : _seconds(seconds) {};
-        /**
-         * Start the timer, finishes in '_seconds' seconds
-         */
-        void     start();
-        int      remaining() const;
-        bool     finished();
-        bool     is_running() const {return _is_running;};
+        /** Start the timer Timer finishes in '_seconds' seconds */
+        void                   start();
+        /** Remaining time in seconds */
+        [[nodiscard]] int      remaining() const;
+        bool                   finished();
+        [[nodiscard]] bool     is_running() const {return _is_running;};
     };
 
 } // tts
