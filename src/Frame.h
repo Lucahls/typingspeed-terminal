@@ -58,6 +58,7 @@ namespace tts::Frames {
     protected:
         ftxui::Component _button_start;
         ftxui::Component _button_config;
+        ftxui::Component _button_quit;
     public:
         explicit         Home(tts::TypingSpeedTerminal* terminal);
         ftxui::Component render() override;
@@ -104,6 +105,7 @@ namespace tts::Frames {
     class Stats : public Frame {
     protected:
         ftxui::Component _button_restart;
+        ftxui::Component _button_config;
         ftxui::Component _button_quit;
         TypingStats      _stats;
         int              _wpm;

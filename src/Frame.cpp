@@ -17,22 +17,31 @@ namespace tts::Frames {
      * Home
      */
     Home::Home(TypingSpeedTerminal *terminal) : Frame(terminal) {
-        this->_button_start = ftxui::Button("Press [↩] to start", [&] {
+        this->_button_start = ftxui::Button(" Start Typing ", [&] {
             this->_terminal->change_to(std::make_unique<TypingTerminal>(this->_terminal));
             }, ftxui::ButtonOption::Simple()) | ftxui::color(ftxui::Color::LightGreen);
 
-        this->_button_config = ftxui::Button("Settings", [&] {
+        this->_button_config = ftxui::Button(" Settings ", [&] {
             this->_terminal->change_to(std::make_unique<Config>(this->_terminal));
         });
+
+        this->_button_quit = ftxui::Button(" Quit ", this->_terminal->exit());
     }
 
     ftxui::Component Home::render() {
-        return ftxui::Renderer(ftxui::Container::Vertical({_button_start, _button_config}), [&] {
+        return ftxui::Renderer(
+                ftxui::Container::Vertical({
+                    _button_start,
+                    ftxui::Container::Horizontal({_button_config, _button_quit})
+                }), [&] {
             return ftxui::flexbox({
                 title_ascii_art(),
                 ftxui::vbox({
                     _button_start->Render(),
-                    _button_config->Render(),
+                    ftxui::hbox({
+                            _button_config->Render(),
+                            _button_quit->Render(),
+                    }),
                 })
             }, ftxui::FlexboxConfig()
             .Set(ftxui::FlexboxConfig::Direction::Column)
@@ -251,6 +260,11 @@ namespace tts::Frames {
         this->_button_restart = ftxui::Button(" ⟳  Restart ", [&] {
                 this->_terminal->change_to(std::make_unique<TypingTerminal>(this->_terminal));
         });
+
+        this->_button_config = ftxui::Button(" Settings ", [&] {
+            this->_terminal->change_to(std::make_unique<Config>(this->_terminal));
+        });
+
         this->_button_quit = ftxui::Button(" × Quit ", this->_terminal->exit());
 
         // Calculation for Net WPM from https://www.speedtypingonline.com/typing-equations
@@ -261,8 +275,11 @@ namespace tts::Frames {
     }
 
     ftxui::Component Stats::render() {
-        return ftxui::Renderer(ftxui::Container::Horizontal({this->_button_quit,
-                                                                  this->_button_restart}), [&] {
+        return ftxui::Renderer(
+                ftxui::Container::Vertical({
+                    _button_restart,
+                    ftxui::Container::Horizontal({_button_config, _button_quit})
+                }), [&] {
 
             ftxui::Decorator wpm_color = ftxui::color(ftxui::Color::LightGreen);
             if(_wpm < 30)
@@ -331,10 +348,12 @@ namespace tts::Frames {
                 ftxui::text(""),
 
                 // ---- Buttons ----
-                ftxui::hbox({
-                        ftxui::filler(),
-                        this->_button_quit->Render(),
-                        this->_button_restart->Render(),
+                ftxui::vbox({
+                        _button_restart->Render(),
+                        ftxui::hbox({
+                                _button_config->Render(),
+                                _button_quit->Render(),
+                        })
                 })
             }, ftxui::FlexboxConfig()
             .Set(ftxui::FlexboxConfig::Direction::Column)
