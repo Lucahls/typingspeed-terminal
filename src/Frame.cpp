@@ -282,15 +282,19 @@ namespace tts::Frames {
                 }), [&] {
 
             ftxui::Decorator wpm_color = ftxui::color(ftxui::Color::LightGreen);
-            if(_wpm < 30)
+            constexpr int wpm_bad = 30;
+            constexpr int wpm_ok = 40;
+            if(_wpm < wpm_bad)
                 wpm_color = ftxui::color(ftxui::Color::RedLight);
-            else if(_wpm < 40)
+            else if(_wpm < wpm_ok)
                 wpm_color = ftxui::color(ftxui::Color::YellowLight);
 
             ftxui::Decorator accuracy_color = ftxui::color(ftxui::Color::LightGreen);
-            if(_accuracy < 80)
+            constexpr int acc_bad = 80;
+            constexpr int acc_ok = 90;
+            if(_accuracy < acc_bad)
                 accuracy_color = ftxui::color(ftxui::Color::RedLight);
-            else if(_accuracy < 90)
+            else if(_accuracy < acc_ok)
                 accuracy_color = ftxui::color(ftxui::Color::YellowLight);
 
             return ftxui::flexbox({
